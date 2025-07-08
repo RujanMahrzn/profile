@@ -593,27 +593,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Demo function to simulate a remote connection
-    function simulateRemoteConnection() {
-        setTimeout(() => {
-            // Simulate receiving a remote stream
-            remoteVideo.srcObject = localStream.clone();
-            
-            // Add a participant to the list
-            const participantsList = document.getElementById('participantsList');
-            const newParticipant = document.createElement('li');
-            newParticipant.className = 'mb-2';
-            newParticipant.textContent = 'Remote User';
-            participantsList.appendChild(newParticipant);
-            
-            // Update room status
-            roomStatus.textContent = '2 participants';
-            roomStatus.className = 'badge bg-success';
-        }, 2500);
+    async function startCamera() {
+    try {
+        // Stop any existing stream
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+        }
+        
+        localStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: currentFacingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: true
+        });
+        
+        localVideo.srcObject = localStream;
+        isVideoOn = true;
+        isAudioOn = true;
+        updateUI();
+        
+        // For demo purposes - simulate a remote connection
+        if (!remoteVideo.srcObject) {
+            simulateRemoteConnection();
+        }
+    } catch (error) {
+        console.error('Error accessing media devices:', error);
+        alert('Could not access camera or microphone: ' + error.message);
     }
-    
-    // Start the camera when the page loads
-    startCamera();
-});
+}
       
     </script>
 </body>
