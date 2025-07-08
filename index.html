@@ -356,8 +356,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let isAudioOn = true;
     let currentFacingMode = 'user'; // 'user' or 'environment'
     let peer;
+    let remoteStreamTimer;
     
-    // For demo purposes - in a real app, you'd implement proper signaling
+    // For demo purposes
     let roomId = generateRoomId();
     document.getElementById('inviteLink').value = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
     
@@ -368,6 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
         checkUrlForRoom();
         updateUI();
+        startCamera();
     }
     
     function setupEventListeners() {
@@ -388,11 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleSidebarBtn.addEventListener('click', toggleSidebar);
         
         // For demo purposes - simulate connection
-        setTimeout(() => {
-            connectionStatus.textContent = 'Connected to room: ' + roomId;
-            roomStatus.textContent = '1 participant';
-            roomStatus.className = 'badge bg-primary';
-        }, 1500);
+        simulateConnectionStatus();
     }
     
     async function toggleScreenShare() {
@@ -410,7 +408,11 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Start screen sharing
                 screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: true,
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        frameRate: { ideal: 30 }
+                    },
                     audio: true
                 });
                 
@@ -438,13 +440,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function startCamera() {
         try {
+            // Stop any existing stream
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            
             localStream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: currentFacingMode,
                     width: { ideal: 1280 },
-                    height: { ideal: 720 }
+                    height: { ideal: 720 },
+                    frameRate: { ideal: 30 }
                 },
-                audio: true
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
             });
             
             localVideo.srcObject = localStream;
@@ -453,10 +465,16 @@ document.addEventListener('DOMContentLoaded', function() {
             updateUI();
             
             // For demo purposes - simulate a remote connection
-            simulateRemoteConnection();
+            if (!remoteVideo.srcObject) {
+                simulateRemoteConnection();
+            }
         } catch (error) {
             console.error('Error accessing media devices:', error);
             alert('Could not access camera or microphone: ' + error.message);
+            
+            // Fallback to placeholder
+            localVideo.poster = 'https://via.placeholder.com/640x360/333/ccc?text=No+Camera';
+            localVideo.srcObject = null;
         }
     }
     
@@ -572,6 +590,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (roomParam) {
             // In a real app, you would join the room here
             console.log('Joining room:', roomParam);
+            roomId = roomParam;
+            document.getElementById('inviteLink').value = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
         }
     }
     
@@ -592,38 +612,99 @@ document.addEventListener('DOMContentLoaded', function() {
         return Math.random().toString(36).substring(2, 8) + Math.random().toString(36).substring(2, 8);
     }
     
-    // Demo function to simulate a remote connection
-    async function startCamera() {
-    try {
-        // Stop any existing stream
-        if (localStream) {
-            localStream.getTracks().forEach(track => track.stop());
-        }
+    // Simulate connection status changes
+    function simulateConnectionStatus() {
+        connectionStatus.textContent = 'Connecting...';
+        connectionStatus.classList.add('connecting');
         
-        localStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: currentFacingMode,
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: true
-        });
-        
-        localVideo.srcObject = localStream;
-        isVideoOn = true;
-        isAudioOn = true;
-        updateUI();
-        
-        // For demo purposes - simulate a remote connection
-        if (!remoteVideo.srcObject) {
-            simulateRemoteConnection();
-        }
-    } catch (error) {
-        console.error('Error accessing media devices:', error);
-        alert('Could not access camera or microphone: ' + error.message);
+        setTimeout(() => {
+            connectionStatus.textContent = 'Connected to room: ' + roomId;
+            connectionStatus.classList.remove('connecting');
+            roomStatus.textContent = '1 participant';
+            roomStatus.className = 'badge bg-primary';
+        }, 1500);
     }
-}
-      
+    
+    // Simulate a remote connection with different video
+    function simulateRemoteConnection() {
+        // Clear any existing timer
+        if (remoteStreamTimer) clearTimeout(remoteStreamTimer);
+        
+        remoteStreamTimer = setTimeout(() => {
+            // Create a different looking stream for the remote user
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 360;
+            const ctx = canvas.getContext('2d');
+            
+            // Create a gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#3498db');
+            gradient.addColorStop(1, '#2ecc71');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add text
+            ctx.fillStyle = 'white';
+            ctx.font = '30px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Remote User', canvas.width/2, canvas.height/2);
+            
+            // Convert canvas to stream
+            const stream = canvas.captureStream(30);
+            const audioContext = new AudioContext();
+            const oscillator = audioContext.createOscillator();
+            const dst = oscillator.connect(audioContext.createMediaStreamDestination());
+            oscillator.start();
+            
+            // Add audio track to stream
+            stream.addTrack(dst.stream.getAudioTracks()[0]);
+            
+            // Display the remote stream
+            remoteVideo.srcObject = stream;
+            
+            // Add a participant to the list
+            const participantsList = document.getElementById('participantsList');
+            const newParticipant = document.createElement('li');
+            newParticipant.className = 'mb-2';
+            newParticipant.textContent = 'Remote User';
+            participantsList.appendChild(newParticipant);
+            
+            // Update room status
+            roomStatus.textContent = '2 participants';
+            roomStatus.className = 'badge bg-success';
+            
+            // Update the remote video footer
+            document.querySelector('#remoteVideo').nextElementSibling.querySelector('small').textContent = 'Connected';
+            
+            // Simulate occasional network issues
+            simulateNetworkVariability();
+        }, 2500);
+    }
+    
+    // Simulate network conditions for demo purposes
+    function simulateNetworkVariability() {
+        setTimeout(() => {
+            if (remoteVideo.srcObject) {
+                // Randomly degrade quality
+                if (Math.random() > 0.7) {
+                    remoteVideo.style.filter = 'blur(2px)';
+                    connectionStatus.textContent = 'Connected (poor network)';
+                    connectionStatus.classList.add('text-warning');
+                    
+                    setTimeout(() => {
+                        remoteVideo.style.filter = '';
+                        connectionStatus.textContent = 'Connected to room: ' + roomId;
+                        connectionStatus.classList.remove('text-warning');
+                    }, 3000);
+                }
+                
+                // Continue simulating
+                simulateNetworkVariability();
+            }
+        }, 8000);
+    }
+});
     </script>
 </body>
 
