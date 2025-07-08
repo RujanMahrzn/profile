@@ -22,7 +22,91 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css">
+    <style>
+      body {
+    overflow: hidden;
+}
+
+.sidebar {
+    transition: all 0.3s;
+}
+
+.main-content {
+    transition: all 0.3s;
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: fixed;
+        z-index: 1000;
+        left: -100%;
+        height: 100vh;
+    }
+    
+    .sidebar.show {
+        left: 0;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+}
+
+.card {
+    height: calc(100% - 20px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    min-height: 300px;
+}
+
+video {
+    object-fit: contain;
+    border-radius: 0.25rem;
+}
+
+.controls-overlay {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+#localVideo, #remoteVideo {
+    background-color: #000;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 5px 10px;
+}
+
+#connectionStatus {
+    font-size: 0.85rem;
+}
+
+#participantsList li {
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#userName {
+    font-weight: 500;
+}
+
+/* Animation for connection status */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.connecting {
+    animation: pulse 1.5s infinite;
+}
+    </style>
 </head>
 <body>
     <div class="container-fluid">
@@ -235,7 +319,303 @@
     <!-- Simple Peer for WebRTC -->
     <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
     <!-- Custom JS -->
-    <script src="script.js"></script>
+    <script >
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const startSharingBtn = document.getElementById('startSharingBtn');
+    const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+    const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+    const flipCameraBtn = document.getElementById('flipCameraBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const remoteFullscreenBtn = document.getElementById('remoteFullscreenBtn');
+    const inviteBtn = document.getElementById('inviteBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const copyInviteLinkBtn = document.getElementById('copyInviteLinkBtn');
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const videoStatus = document.getElementById('videoStatus');
+    const audioStatus = document.getElementById('audioStatus');
+    const connectionStatus = document.getElementById('connectionStatus');
+    const roomStatus = document.getElementById('roomStatus');
+    const cameraSelect = document.getElementById('cameraSelect');
+    const microphoneSelect = document.getElementById('microphoneSelect');
+    const speakerSelect = document.getElementById('speakerSelect');
+    
+    // Modals
+    const inviteModal = new bootstrap.Modal(document.getElementById('inviteModal'));
+    const settingsModal = new bootstrap.Modal(document.getElementById('settingsModal'));
+    
+    // State variables
+    let localStream;
+    let remoteStream;
+    let screenStream;
+    let isSharingScreen = false;
+    let isVideoOn = true;
+    let isAudioOn = true;
+    let currentFacingMode = 'user'; // 'user' or 'environment'
+    let peer;
+    
+    // For demo purposes - in a real app, you'd implement proper signaling
+    let roomId = generateRoomId();
+    document.getElementById('inviteLink').value = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+    
+    // Initialize the app
+    init();
+    
+    function init() {
+        setupEventListeners();
+        checkUrlForRoom();
+        updateUI();
+    }
+    
+    function setupEventListeners() {
+        // Button click handlers
+        startSharingBtn.addEventListener('click', toggleScreenShare);
+        toggleVideoBtn.addEventListener('click', toggleVideo);
+        toggleAudioBtn.addEventListener('click', toggleAudio);
+        flipCameraBtn.addEventListener('click', flipCamera);
+        fullscreenBtn.addEventListener('click', () => toggleFullscreen(localVideo));
+        remoteFullscreenBtn.addEventListener('click', () => toggleFullscreen(remoteVideo));
+        inviteBtn.addEventListener('click', () => inviteModal.show());
+        settingsBtn.addEventListener('click', () => {
+            populateDeviceSelectors();
+            settingsModal.show();
+        });
+        copyInviteLinkBtn.addEventListener('click', copyInviteLink);
+        saveSettingsBtn.addEventListener('click', saveSettings);
+        toggleSidebarBtn.addEventListener('click', toggleSidebar);
+        
+        // For demo purposes - simulate connection
+        setTimeout(() => {
+            connectionStatus.textContent = 'Connected to room: ' + roomId;
+            roomStatus.textContent = '1 participant';
+            roomStatus.className = 'badge bg-primary';
+        }, 1500);
+    }
+    
+    async function toggleScreenShare() {
+        try {
+            if (isSharingScreen) {
+                // Stop screen sharing
+                if (screenStream) {
+                    screenStream.getTracks().forEach(track => track.stop());
+                }
+                startSharingBtn.innerHTML = '<i class="fas fa-desktop me-2"></i> Start Sharing';
+                isSharingScreen = false;
+                
+                // Switch back to camera
+                await startCamera();
+            } else {
+                // Start screen sharing
+                screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: true
+                });
+                
+                // Replace the video track
+                if (localStream) {
+                    const videoTrack = screenStream.getVideoTracks()[0];
+                    const sender = localStream.getVideoTracks()[0];
+                    sender.replaceTrack(videoTrack);
+                    
+                    // Handle when user stops sharing via browser UI
+                    videoTrack.onended = () => {
+                        toggleScreenShare();
+                    };
+                }
+                
+                startSharingBtn.innerHTML = '<i class="fas fa-stop me-2"></i> Stop Sharing';
+                isSharingScreen = true;
+            }
+            updateUI();
+        } catch (error) {
+            console.error('Error toggling screen share:', error);
+            alert('Could not start screen sharing: ' + error.message);
+        }
+    }
+    
+    async function startCamera() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: currentFacingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: true
+            });
+            
+            localVideo.srcObject = localStream;
+            isVideoOn = true;
+            isAudioOn = true;
+            updateUI();
+            
+            // For demo purposes - simulate a remote connection
+            simulateRemoteConnection();
+        } catch (error) {
+            console.error('Error accessing media devices:', error);
+            alert('Could not access camera or microphone: ' + error.message);
+        }
+    }
+    
+    function toggleVideo() {
+        if (localStream) {
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                isVideoOn = videoTrack.enabled;
+                updateUI();
+            }
+        }
+    }
+    
+    function toggleAudio() {
+        if (localStream) {
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                isAudioOn = audioTrack.enabled;
+                updateUI();
+            }
+        }
+    }
+    
+    async function flipCamera() {
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        
+        if (localStream && !isSharingScreen) {
+            // Stop the current stream
+            localStream.getTracks().forEach(track => track.stop());
+            
+            // Start with the new facing mode
+            await startCamera();
+        }
+    }
+    
+    function toggleFullscreen(element) {
+        if (!document.fullscreenElement) {
+            element.requestFullscreen().catch(err => {
+                console.error('Error attempting to enable fullscreen:', err);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+    
+    function copyInviteLink() {
+        const inviteLink = document.getElementById('inviteLink');
+        inviteLink.select();
+        document.execCommand('copy');
+        
+        // Show feedback
+        const originalText = copyInviteLinkBtn.innerHTML;
+        copyInviteLinkBtn.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+        setTimeout(() => {
+            copyInviteLinkBtn.innerHTML = originalText;
+        }, 2000);
+    }
+    
+    async function populateDeviceSelectors() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            
+            // Cameras
+            cameraSelect.innerHTML = '';
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            videoDevices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+                cameraSelect.appendChild(option);
+            });
+            
+            // Microphones
+            microphoneSelect.innerHTML = '';
+            const audioInputDevices = devices.filter(device => device.kind === 'audioinput');
+            audioInputDevices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Microphone ${microphoneSelect.length + 1}`;
+                microphoneSelect.appendChild(option);
+            });
+            
+            // Speakers
+            speakerSelect.innerHTML = '';
+            const audioOutputDevices = devices.filter(device => device.kind === 'audiooutput');
+            audioOutputDevices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Speaker ${speakerSelect.length + 1}`;
+                speakerSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error enumerating devices:', error);
+        }
+    }
+    
+    function saveSettings() {
+        // In a real app, you would save these settings and apply them
+        alert('Settings saved! (This is a demo - settings are not actually saved)');
+        settingsModal.hide();
+    }
+    
+    function toggleSidebar() {
+        document.querySelector('.sidebar').classList.toggle('show');
+    }
+    
+    function checkUrlForRoom() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomParam = urlParams.get('room');
+        
+        if (roomParam) {
+            // In a real app, you would join the room here
+            console.log('Joining room:', roomParam);
+        }
+    }
+    
+    function updateUI() {
+        // Update button states
+        toggleVideoBtn.innerHTML = `<i class="fas fa-video me-2"></i> ${isVideoOn ? 'Turn Off' : 'Turn On'} Video`;
+        toggleAudioBtn.innerHTML = `<i class="fas fa-microphone me-2"></i> ${isAudioOn ? 'Turn Off' : 'Turn On'} Audio`;
+        
+        // Update status indicators
+        videoStatus.innerHTML = `<i class="fas fa-${isVideoOn ? 'video' : 'video-slash'} me-1"></i> Video ${isVideoOn ? 'On' : 'Off'}`;
+        videoStatus.className = `badge ${isVideoOn ? 'bg-success' : 'bg-danger'}`;
+        
+        audioStatus.innerHTML = `<i class="fas fa-microphone${isAudioOn ? '' : '-slash'} me-1"></i> Audio ${isAudioOn ? 'On' : 'Off'}`;
+        audioStatus.className = `badge ${isAudioOn ? 'bg-success' : 'bg-danger'}`;
+    }
+    
+    function generateRoomId() {
+        return Math.random().toString(36).substring(2, 8) + Math.random().toString(36).substring(2, 8);
+    }
+    
+    // Demo function to simulate a remote connection
+    function simulateRemoteConnection() {
+        setTimeout(() => {
+            // Simulate receiving a remote stream
+            remoteVideo.srcObject = localStream.clone();
+            
+            // Add a participant to the list
+            const participantsList = document.getElementById('participantsList');
+            const newParticipant = document.createElement('li');
+            newParticipant.className = 'mb-2';
+            newParticipant.textContent = 'Remote User';
+            participantsList.appendChild(newParticipant);
+            
+            // Update room status
+            roomStatus.textContent = '2 participants';
+            roomStatus.className = 'badge bg-success';
+        }, 2500);
+    }
+    
+    // Start the camera when the page loads
+    startCamera();
+});
+      
+    </script>
 </body>
 
 
