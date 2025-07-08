@@ -327,7 +327,205 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // ... (keep all your existing variable declarations) ...
-
+ const localVideo = document.getElementById('localVideo');
+            const remoteVideo = document.getElementById('remoteVideo');
+            const localVideoPlaceholder = document.getElementById('localVideoPlaceholder');
+            const remoteVideoPlaceholder = document.getElementById('remoteVideoPlaceholder');
+            const startSessionBtn = document.getElementById('startSessionBtn');
+            const startSharingBtn = document.getElementById('startSharingBtn');
+            const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+            const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+            const flipCameraBtn = document.getElementById('flipCameraBtn');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const remoteFullscreenBtn = document.getElementById('remoteFullscreenBtn');
+            const inviteBtn = document.getElementById('inviteBtn');
+            const endSessionBtn = document.getElementById('endSessionBtn');
+            const copyInviteLinkBtn = document.getElementById('copyInviteLinkBtn');
+            const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+            const videoStatus = document.getElementById('videoStatus');
+            const audioStatus = document.getElementById('audioStatus');
+            const connectionStatus = document.getElementById('connectionStatus');
+            const roomStatus = document.getElementById('roomStatus');
+            const createRoomBtn = document.getElementById('createRoomBtn');
+            const joinRoomView = document.getElementById('joinRoomView');
+            const sessionView = document.getElementById('sessionView');
+            
+            // Modals
+            const inviteModal = new bootstrap.Modal(document.getElementById('inviteModal'));
+            
+            // State variables
+            let localStream;
+            let remoteStream;
+            let screenStream;
+            let isSessionActive = false;
+            let isSharingScreen = false;
+            let isVideoOn = false;
+            let isAudioOn = false;
+            let currentFacingMode = 'user';
+            let peer;
+            let roomId;
+            
+            // Initialize the app
+            init();
+            
+            function init() {
+                setupEventListeners();
+                checkUrlForRoom();
+                updateUI();
+            }
+            
+            function setupEventListeners() {
+                // Button click handlers
+                createRoomBtn.addEventListener('click', createRoom);
+                startSessionBtn.addEventListener('click', startSession);
+                endSessionBtn.addEventListener('click', endSession);
+                startSharingBtn.addEventListener('click', toggleScreenShare);
+                toggleVideoBtn.addEventListener('click', toggleVideo);
+                toggleAudioBtn.addEventListener('click', toggleAudio);
+                flipCameraBtn.addEventListener('click', flipCamera);
+                fullscreenBtn.addEventListener('click', () => toggleFullscreen(localVideo));
+                remoteFullscreenBtn.addEventListener('click', () => toggleFullscreen(remoteVideo));
+                inviteBtn.addEventListener('click', showInviteModal);
+                copyInviteLinkBtn.addEventListener('click', copyInviteLink);
+                toggleSidebarBtn.addEventListener('click', toggleSidebar);
+            }
+            
+            function createRoom() {
+                roomId = generateRoomId();
+                joinRoomView.style.display = 'none';
+                sessionView.style.display = 'flex';
+                document.getElementById('inviteLink').value = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+                connectionStatus.textContent = 'Room created: ' + roomId;
+                roomStatus.textContent = 'Not Started';
+                roomStatus.className = 'badge bg-secondary';
+            }
+            
+            function startSession() {
+                if (!isSessionActive) {
+                    isSessionActive = true;
+                    startSessionBtn.innerHTML = '<i class="fas fa-pause me-2"></i> Pause Session';
+                    startSessionBtn.className = 'btn btn-warning w-100 mb-2';
+                    
+                    // Enable controls
+                    startSharingBtn.disabled = false;
+                    toggleVideoBtn.disabled = false;
+                    toggleAudioBtn.disabled = false;
+                    flipCameraBtn.disabled = false;
+                    fullscreenBtn.disabled = false;
+                    
+                    // Start with audio only by default (no video)
+                    startAudioOnly();
+                    
+                    roomStatus.textContent = '1 participant';
+                    roomStatus.className = 'badge bg-primary';
+                    
+                    // For demo purposes - simulate remote connection after delay
+                    setTimeout(simulateRemoteConnection, 3000);
+                } else {
+                    // Pause session
+                    isSessionActive = false;
+                    startSessionBtn.innerHTML = '<i class="fas fa-play me-2"></i> Resume Session';
+                    startSessionBtn.className = 'btn btn-primary w-100 mb-2';
+                    
+                    // Disable media streams
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    // Show placeholders
+                    localVideo.style.display = 'none';
+                    localVideoPlaceholder.style.display = 'flex';
+                    document.querySelector('#localVideo').nextElementSibling.querySelector('small').textContent = 'Session paused';
+                    
+                    roomStatus.textContent = 'Paused';
+                    roomStatus.className = 'badge bg-warning';
+                }
+                updateUI();
+            }
+            
+            function endSession() {
+                if (confirm('Are you sure you want to end the session?')) {
+                    // Stop all streams
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
+                    }
+                    if (remoteStream) {
+                        remoteStream.getTracks().forEach(track => track.stop());
+                    }
+                    if (screenStream) {
+                        screenStream.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    // Reset state
+                    isSessionActive = false;
+                    isSharingScreen = false;
+                    isVideoOn = false;
+                    isAudioOn = false;
+                    
+                    // Reset UI
+                    startSessionBtn.innerHTML = '<i class="fas fa-play me-2"></i> Start Session';
+                    startSessionBtn.className = 'btn btn-primary w-100 mb-2';
+                    startSharingBtn.innerHTML = '<i class="fas fa-desktop me-2"></i> Share Screen';
+                    startSharingBtn.disabled = true;
+                    toggleVideoBtn.disabled = true;
+                    toggleAudioBtn.disabled = true;
+                    flipCameraBtn.disabled = true;
+                    fullscreenBtn.disabled = true;
+                    remoteFullscreenBtn.disabled = true;
+                    
+                    // Show placeholders
+                    localVideo.style.display = 'none';
+                    localVideoPlaceholder.style.display = 'flex';
+                    remoteVideo.style.display = 'none';
+                    remoteVideoPlaceholder.style.display = 'flex';
+                    
+                    // Update status
+                    document.querySelector('#localVideo').nextElementSibling.querySelector('small').textContent = 'Session ended';
+                    document.querySelector('#remoteVideo').nextElementSibling.querySelector('small').textContent = 'Disconnected';
+                    connectionStatus.textContent = 'Session ended';
+                    roomStatus.textContent = 'Ended';
+                    roomStatus.className = 'badge bg-danger';
+                    
+                    // Reset participants list
+                    const participantsList = document.getElementById('participantsList');
+                    while (participantsList.children.length > 1) {
+                        participantsList.removeChild(participantsList.lastChild);
+                    }
+                    
+                    updateUI();
+                }
+            }
+            
+            async function startAudioOnly() {
+                try {
+                    // Stop any existing stream
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    localStream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        }
+                    });
+                    
+                    // Show audio-only UI
+                    localVideo.style.display = 'none';
+                    localVideoPlaceholder.style.display = 'flex';
+                    localVideoPlaceholder.innerHTML = '<i class="fas fa-microphone"></i><p>Audio only mode</p>';
+                    
+                    isAudioOn = true;
+                    isVideoOn = false;
+                    updateUI();
+                    
+                    document.querySelector('#localVideo').nextElementSibling.querySelector('small').textContent = 'Audio only';
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    alert('Could not access microphone: ' + error.message);
+                }
+            }
             async function startCamera() {
                 try {
                     // Stop any existing stream
