@@ -3,1616 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VisionShare Pro | Premium Screen Sharing</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
+    <title>ConnectHub - Screen Sharing & Video Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Animate.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <style>
-        :root {
-            --primary: #6C5CE7;
-            --primary-light: #A29BFE;
-            --primary-dark: #5649C0;
-            --secondary: #FD79A8;
-            --accent: #00CEC9;
-            --dark: #2D3436;
-            --darker: #1E272E;
-            --light: #F5F6FA;
-            --lighter: #FFFFFF;
-            --gray: #636E72;
-            --light-gray: #DFE6E9;
-            --success: #00B894;
-            --danger: #D63031;
-            --warning: #FDCB6E;
-            --info: #0984E3;
-            
-            --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.05);
-            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.08);
-            --shadow-md: 0 10px 15px rgba(0, 0, 0, 0.12);
-            --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.15);
-            --shadow-xl: 0 30px 50px rgba(0, 0, 0, 0.2);
-            
-            --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            
-            --border-radius-sm: 8px;
-            --border-radius-md: 12px;
-            --border-radius-lg: 16px;
-            --border-radius-xl: 24px;
-            --border-radius-full: 9999px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
-            overflow: hidden;
-            height: 100vh;
-            line-height: 1.6;
-        }
-
-        /* Glassmorphism Effect */
-        .glass {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* App Layout */
-        .app-container {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 300px;
-            background: linear-gradient(135deg, var(--darker), #1A1A2E);
-            color: var(--lighter);
-            display: flex;
-            flex-direction: column;
-            transition: var(--transition-normal);
-            z-index: 100;
-            box-shadow: var(--shadow-md);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.1) 0%, rgba(108, 92, 231, 0) 70%);
-            animation: rotate 20s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .sidebar-header {
-            padding: 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            font-size: 1.5rem;
-            letter-spacing: 0.5px;
-            color: var(--lighter);
-        }
-
-        .logo-icon {
-            color: var(--accent);
-            font-size: 1.8rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background-color: var(--light);
-            position: relative;
-        }
-
-        .main-content::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 80%, rgba(253, 121, 168, 0.05) 0%, transparent 30%),
-                        radial-gradient(circle at 80% 20%, rgba(0, 206, 201, 0.05) 0%, transparent 30%);
-            z-index: -1;
-        }
-
-        /* Toolbar */
-        .toolbar {
-            padding: 16px 24px;
-            background-color: var(--lighter);
-            box-shadow: var(--shadow-xs);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-            position: relative;
-        }
-
-        .toolbar::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
-        }
-
-        .room-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--danger);
-            position: relative;
-        }
-
-        .status-dot::before {
-            content: '';
-            position: absolute;
-            top: -3px;
-            left: -3px;
-            right: -3px;
-            bottom: -3px;
-            border-radius: 50%;
-            background-color: inherit;
-            opacity: 0.3;
-        }
-
-        .status-dot.connected {
-            background-color: var(--success);
-            animation: pulse 1.5s infinite;
-        }
-
-        .room-id {
-            font-family: 'Fira Code', monospace;
-            background-color: var(--light-gray);
-            padding: 4px 12px;
-            border-radius: var(--border-radius-full);
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--dark);
-        }
-
-        /* Video Grid */
-        .video-grid {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 24px;
-            align-content: flex-start;
-        }
-
-        @media (max-width: 768px) {
-            .video-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Video Card */
-        .video-card {
-            background-color: var(--lighter);
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition-normal);
-            display: flex;
-            flex-direction: column;
-            height: 320px;
-            position: relative;
-        }
-
-        .video-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .video-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-        }
-
-        .video-header {
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .video-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--dark);
-        }
-
-        .video-badge {
-            font-size: 0.75rem;
-            padding: 4px 10px;
-            border-radius: var(--border-radius-full);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .video-badge.primary {
-            background-color: var(--primary-light);
-            color: var(--primary-dark);
-        }
-
-        .video-badge.success {
-            background-color: rgba(0, 184, 148, 0.1);
-            color: var(--success);
-        }
-
-        .video-badge.warning {
-            background-color: rgba(253, 203, 110, 0.1);
-            color: #E17055;
-        }
-
-        .video-badge.secondary {
-            background-color: rgba(157, 178, 191, 0.1);
-            color: var(--gray);
-        }
-
-        .video-container {
-            flex: 1;
-            background-color: var(--dark);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .video-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(45, 52, 54, 0.8), rgba(30, 39, 46, 0.9));
-            z-index: 1;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            position: relative;
-            z-index: 2;
-        }
-
-        .video-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--light-gray);
-            text-align: center;
-            padding: 24px;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 3;
-        }
-
-        .placeholder-icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-            color: var(--primary-light);
-            opacity: 0.7;
-        }
-
-        .placeholder-text {
-            font-size: 1rem;
-            font-weight: 500;
-            max-width: 80%;
-            margin: 0 auto;
-        }
-
-        .video-controls {
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
-            display: flex;
-            gap: 8px;
-            z-index: 10;
-        }
-
-        .control-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(45, 52, 54, 0.7);
-            border: none;
-            color: var(--lighter);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-
-        .control-btn:hover {
-            background-color: rgba(108, 92, 231, 0.8);
-            transform: scale(1.1);
-        }
-
-        .control-btn i {
-            font-size: 1.1rem;
-        }
-
-        .video-footer {
-            padding: 12px 16px;
-            background-color: var(--lighter);
-            font-size: 0.85rem;
-            color: var(--gray);
-            text-align: center;
-            border-top: 1px solid var(--light-gray);
-        }
-
-        /* Controls Panel */
-        .controls-panel {
-            padding: 16px 24px;
-            background-color: var(--lighter);
-            border-top: 1px solid var(--light-gray);
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            position: relative;
-        }
-
-        .controls-panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
-        }
-
-        .control-btn-large {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--lighter);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition-normal);
-            box-shadow: var(--shadow-sm);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .control-btn-large::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
-            opacity: 0;
-            transition: var(--transition-fast);
-        }
-
-        .control-btn-large:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .control-btn-large:hover::before {
-            opacity: 1;
-        }
-
-        .control-btn-large i {
-            font-size: 1.5rem;
-        }
-
-        .control-btn-large.secondary {
-            background: var(--lighter);
-            color: var(--dark);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .control-btn-large.secondary:hover {
-            background: var(--light-gray);
-        }
-
-        .control-btn-large.danger {
-            background: linear-gradient(135deg, var(--danger), #C0392B);
-        }
-
-        .control-btn-large.warning {
-            background: linear-gradient(135deg, var(--warning), #E17055);
-        }
-
-        /* Welcome Screen */
-        .welcome-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 40px;
-            text-align: center;
-            background: linear-gradient(135deg, var(--light), #EFF2F7);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-screen::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.05) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-            z-index: 0;
-        }
-
-        .welcome-content {
-            position: relative;
-            z-index: 1;
-            max-width: 800px;
-            padding: 40px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: var(--border-radius-xl);
-            box-shadow: var(--shadow-lg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .welcome-title {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-family: 'Montserrat', sans-serif;
-            letter-spacing: -0.5px;
-        }
-
-        .welcome-subtitle {
-            font-size: 1.2rem;
-            color: var(--gray);
-            margin-bottom: 32px;
-            font-weight: 500;
-        }
-
-        .welcome-description {
-            font-size: 1.1rem;
-            color: var(--gray);
-            margin-bottom: 40px;
-            line-height: 1.8;
-        }
-
-        .btn-create-room {
-            padding: 16px 40px;
-            border-radius: var(--border-radius-full);
-            font-weight: 600;
-            background: linear-gradient(to right, var(--primary), var(--primary-dark));
-            border: none;
-            color: var(--lighter);
-            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
-            transition: var(--transition-normal);
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.1rem;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .btn-create-room::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(to right, var(--primary-dark), var(--primary));
-            opacity: 0;
-            transition: var(--transition-normal);
-            z-index: -1;
-        }
-
-        .btn-create-room:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(108, 92, 231, 0.4);
-        }
-
-        .btn-create-room:hover::before {
-            opacity: 1;
-        }
-
-        .btn-create-room i {
-            font-size: 1.3rem;
-        }
-
-        /* Floating Particles */
-        .particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            background: linear-gradient(to right, var(--primary-light), var(--accent));
-            opacity: 0.3;
-            animation: float 15s infinite linear;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0) rotate(0deg); }
-            100% { transform: translateY(-1000px) rotate(720deg); }
-        }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background-color: var(--lighter);
-            padding: 16px 24px;
-            border-radius: var(--border-radius-md);
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: var(--transition-normal);
-            z-index: 1000;
-            max-width: 400px;
-            border-left: 4px solid var(--primary);
-        }
-
-        .notification.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .notification-icon {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        .notification-success .notification-icon {
-            color: var(--success);
-        }
-
-        .notification-error .notification-icon {
-            color: var(--danger);
-        }
-
-        .notification-warning .notification-icon {
-            color: var(--warning);
-        }
-
-        .notification-info .notification-icon {
-            color: var(--info);
-        }
-
-        .notification-content {
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-
-        /* Responsive */
-        @media (max-width: 992px) {
-            .sidebar {
-                position: fixed;
-                left: -300px;
-                top: 0;
-                bottom: 0;
-            }
-
-            .sidebar.active {
-                left: 0;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .welcome-title {
-                font-size: 2.2rem;
-            }
-            
-            .welcome-content {
-                padding: 30px;
-            }
-            
-            .controls-panel {
-                padding: 16px;
-            }
-            
-            .control-btn-large {
-                width: 48px;
-                height: 48px;
-            }
-        }
-
-        /* Utility Classes */
-        .animate-pop {
-            animation: pop 0.3s ease-out;
-        }
-
-        @keyframes pop {
-            0% { transform: scale(0.9); opacity: 0; }
-            80% { transform: scale(1.05); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .text-gradient {
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Floating Particles -->
-        <div class="particles" id="particles"></div>
-        
-        <!-- Sidebar -->
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <i class="fas fa-desktop logo-icon"></i>
-                    <span>VisionShare <span class="text-gradient">Pro</span></span>
+        <!-- Pre-meeting screen -->
+        <div class="pre-meeting-screen" id="preMeetingScreen">
+            <div class="logo">
+                <i class="fas fa-video"></i>
+                <span>ConnectHub</span>
+            </div>
+            <div class="meeting-options">
+                <h1>Ready to join?</h1>
+                <div class="input-group">
+                    <input type="text" id="meetingId" placeholder="Enter meeting ID">
+                    <button id="joinMeetingBtn">Join Meeting</button>
                 </div>
-                <button class="control-btn" id="closeSidebarBtn">
-                    <i class="fas fa-times"></i>
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+                <button id="newMeetingBtn" class="primary-btn">
+                    <i class="fas fa-plus"></i> New Meeting
                 </button>
-            </div>
-            
-            <div class="flex-grow-1 p-4 overflow-auto">
-                <h4 class="text-white-50 mb-3" style="font-weight: 500;">Participants</h4>
-                <ul class="list-unstyled" id="participantsList">
-                    <li class="d-flex align-items-center mb-3 p-3 rounded" style="background-color: rgba(255,255,255,0.1); backdrop-filter: blur(5px);">
-                        <div class="rounded-circle bg-accent text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; margin-right: 12px;">
-                            <i class="fas fa-crown" style="font-size: 0.8rem;"></i>
-                        </div>
-                        <div>
-                            <div class="fw-semibold">You</div>
-                            <small class="text-white-50">Host</small>
-                        </div>
-                        <div class="ms-auto">
-                            <div class="status-dot connected"></div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            
-            <div class="p-4 border-top border-secondary">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-gradient-primary text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; margin-right: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div>
-                        <div class="fw-semibold" id="userName">Guest</div>
-                        <small class="text-white-50" id="userStatus">Offline</small>
-                    </div>
+                <div class="settings-toggle">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
                 </div>
+            </div>
+            <div class="settings-panel" id="settingsPanel">
+                <h3>Settings</h3>
+                <div class="setting-option">
+                    <label for="cameraSelect">Camera:</label>
+                    <select id="cameraSelect"></select>
+                </div>
+                <div class="setting-option">
+                    <label for="micSelect">Microphone:</label>
+                    <select id="micSelect"></select>
+                </div>
+                <div class="setting-option">
+                    <label for="speakerSelect">Speaker:</label>
+                    <select id="speakerSelect"></select>
+                </div>
+                <button id="closeSettingsBtn">Close</button>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Welcome Screen -->
-            <div class="welcome-screen" id="welcomeScreen">
-                <div class="welcome-content animate__animated animate__fadeIn">
-                    <h1 class="welcome-title">Share Your Vision</h1>
-                    <p class="welcome-subtitle">Premium Screen Sharing Experience</p>
-                    <p class="welcome-description">
-                        Start a secure, high-quality screen sharing session with colleagues, clients, or friends. 
-                        Collaborate in real-time with crystal clear video and audio powered by WebRTC technology.
-                    </p>
-                    <button class="btn-create-room animate__animated animate__pulse animate__infinite" id="createRoomBtn">
-                        <i class="fas fa-plus"></i> Create New Room
-                    </button>
+        <!-- Meeting screen (initially hidden) -->
+        <div class="meeting-screen" id="meetingScreen">
+            <div class="meeting-header">
+                <div class="meeting-info">
+                    <span id="meetingTime">00:00:00</span>
+                    <span id="meetingIdDisplay">Meeting ID: </span>
                 </div>
-            </div>
-
-            <!-- Session View -->
-            <div id="sessionView" style="display: none;">
-                <!-- Toolbar -->
-                <div class="toolbar">
-                    <button class="control-btn me-3 d-lg-none" id="toggleSidebarBtn">
-                        <i class="fas fa-bars"></i>
+                <div class="meeting-actions">
+                    <button id="inviteParticipantsBtn" title="Invite Participants">
+                        <i class="fas fa-user-plus"></i>
                     </button>
-                    <div class="d-flex align-items-center">
-                        <div class="connection-status">
-                            <div class="status-dot" id="connectionDot"></div>
-                            <span id="connectionStatus">Disconnected</span>
-                        </div>
-                        <span class="room-id ms-3" id="roomIdDisplay">Not connected</span>
-                    </div>
-                    <div>
-                        <button class="btn btn-sm btn-primary me-2" id="inviteBtn">
-                            <i class="fas fa-user-plus me-1"></i> Invite
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" id="endSessionBtn">
-                            <i class="fas fa-stop me-1"></i> End Session
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Video Grid -->
-                <div class="video-grid">
-                    <!-- Local Video Card -->
-                    <div class="video-card animate__animated animate__fadeIn">
-                        <div class="video-header">
-                            <div class="video-title">
-                                <i class="fas fa-user"></i>
-                                <span>Your View</span>
-                            </div>
-                            <span class="video-badge secondary" id="localVideoBadge">Off</span>
-                        </div>
-                        <div class="video-container">
-                            <div class="video-placeholder">
-                                <i class="fas fa-user placeholder-icon"></i>
-                                <p class="placeholder-text">Your video will appear here when you start the session</p>
-                            </div>
-                            <video id="localVideo" autoplay muted playsinline style="display: none;"></video>
-                            <div class="video-controls">
-                                <button class="control-btn" id="flipCameraBtn" title="Flip Camera" disabled>
-                                    <i class="fas fa-camera-rotate"></i>
-                                </button>
-                                <button class="control-btn" id="fullscreenBtn" title="Fullscreen" disabled>
-                                    <i class="fas fa-expand"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="video-footer" id="localVideoStatus">
-                            <small>Waiting to start session...</small>
-                        </div>
-                    </div>
-
-                    <!-- Remote Video Card -->
-                    <div class="video-card animate__animated animate__fadeIn">
-                        <div class="video-header">
-                            <div class="video-title">
-                                <i class="fas fa-users"></i>
-                                <span>Participant</span>
-                            </div>
-                            <span class="video-badge secondary" id="remoteVideoBadge">Offline</span>
-                        </div>
-                        <div class="video-container">
-                            <div class="video-placeholder">
-                                <i class="fas fa-user-friends placeholder-icon"></i>
-                                <p class="placeholder-text">Remote participant will appear here when they join</p>
-                            </div>
-                            <video id="remoteVideo" autoplay playsinline style="display: none;"></video>
-                            <div class="video-controls">
-                                <button class="control-btn" id="remoteFullscreenBtn" title="Fullscreen" disabled>
-                                    <i class="fas fa-expand"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="video-footer" id="remoteVideoStatus">
-                            <small>Waiting for participant to connect...</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Controls Panel -->
-                <div class="controls-panel">
-                    <button class="control-btn-large animate-pop" id="startSessionBtn" title="Start Session">
-                        <i class="fas fa-play"></i>
+                    <button id="participantsBtn" title="Participants">
+                        <i class="fas fa-users"></i>
+                        <span class="badge" id="participantCount">1</span>
                     </button>
-                    <button class="control-btn-large secondary" id="startSharingBtn" title="Share Screen" disabled>
-                        <i class="fas fa-desktop"></i>
+                    <button id="chatBtn" title="Chat">
+                        <i class="fas fa-comment"></i>
                     </button>
-                    <button class="control-btn-large secondary" id="toggleVideoBtn" title="Toggle Video" disabled>
-                        <i class="fas fa-video"></i>
-                    </button>
-                    <button class="control-btn-large secondary" id="toggleAudioBtn" title="Toggle Audio" disabled>
-                        <i class="fas fa-microphone"></i>
-                    </button>
-                    <button class="control-btn-large danger" id="disconnectBtn" title="Disconnect" disabled>
+                    <button id="endCallBtn" class="danger-btn" title="End Call">
                         <i class="fas fa-phone-slash"></i>
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Invite Modal -->
-    <div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0" style="border-radius: var(--border-radius-lg); overflow: hidden;">
-                <div class="modal-header bg-gradient-primary text-white" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
-                    <h5 class="modal-title">
-                        <i class="fas fa-user-plus me-2"></i>
-                        <span>Invite Participants</span>
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="mb-4">
-                        <label for="inviteLink" class="form-label fw-semibold mb-3">Share this secure link:</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control py-2" id="inviteLink" readonly style="border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);">
-                            <button class="btn btn-primary" id="copyInviteLinkBtn" style="border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;">
-                                <i class="fas fa-copy me-1"></i> Copy
-                            </button>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold mb-3">Or send via:</label>
-                        <div class="d-flex flex-column gap-2">
-                            <button class="btn btn-outline-primary d-flex align-items-center justify-content-center">
-                                <i class="fab fa-whatsapp me-2" style="font-size: 1.2rem;"></i>
-                                <span>WhatsApp</span>
-                            </button>
-                            <button class="btn btn-outline-info d-flex align-items-center justify-content-center">
-                                <i class="fab fa-telegram me-2" style="font-size: 1.2rem;"></i>
-                                <span>Telegram</span>
-                            </button>
-                            <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center">
-                                <i class="fas fa-envelope me-2" style="font-size: 1.2rem;"></i>
-                                <span>Email</span>
-                            </button>
+            <div class="meeting-content">
+                <!-- Main video/screen share area -->
+                <div class="main-content">
+                    <div class="video-container" id="mainVideoContainer">
+                        <video id="mainVideo" autoplay playsinline></video>
+                        <div class="video-info">
+                            <span id="mainVideoName">You</span>
+                            <div class="video-actions">
+                                <button class="video-action-btn" id="toggleMicBtn" title="Mute">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button class="video-action-btn" id="toggleVideoBtn" title="Stop Video">
+                                    <i class="fas fa-video"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                <!-- Sidebar (participants, chat, etc.) -->
+                <div class="sidebar" id="sidebar">
+                    <div class="sidebar-header">
+                        <div class="sidebar-tabs">
+                            <button class="sidebar-tab active" data-tab="participants">
+                                <i class="fas fa-users"></i> Participants
+                            </button>
+                            <button class="sidebar-tab" data-tab="chat">
+                                <i class="fas fa-comment"></i> Chat
+                            </button>
+                        </div>
+                        <button class="close-sidebar" id="closeSidebarBtn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="sidebar-content">
+                        <!-- Participants tab -->
+                        <div class="tab-content active" id="participantsTab">
+                            <div class="participants-list" id="participantsList">
+                                <!-- Participants will be added here dynamically -->
+                            </div>
+                            <div class="invite-section">
+                                <h4>Invite others</h4>
+                                <div class="invite-options">
+                                    <button id="copyInviteLinkBtn">
+                                        <i class="fas fa-copy"></i> Copy Invite Link
+                                    </button>
+                                    <button id="shareViaEmailBtn">
+                                        <i class="fas fa-envelope"></i> Email
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat tab -->
+                        <div class="tab-content" id="chatTab">
+                            <div class="chat-messages" id="chatMessages">
+                                <!-- Chat messages will appear here -->
+                            </div>
+                            <div class="chat-input">
+                                <input type="text" id="chatMessageInput" placeholder="Type a message...">
+                                <button id="sendMessageBtn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Controls bar -->
+            <div class="controls-bar">
+                <button class="control-btn" id="shareScreenBtn" title="Share Screen">
+                    <i class="fas fa-desktop"></i>
+                    <span>Share Screen</span>
+                </button>
+                <button class="control-btn" id="toggleSidebarBtn" title="Show Participants">
+                    <i class="fas fa-users"></i>
+                    <span>Participants</span>
+                </button>
+                <button class="control-btn" id="recordMeetingBtn" title="Record Meeting">
+                    <i class="fas fa-circle"></i>
+                    <span>Record</span>
+                </button>
+                <button class="control-btn" id="raiseHandBtn" title="Raise Hand">
+                    <i class="fas fa-hand-paper"></i>
+                    <span>Raise Hand</span>
+                </button>
+                <button class="control-btn" id="moreOptionsBtn" title="More Options">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Invite modal -->
+        <div class="modal" id="inviteModal">
+            <div class="modal-content">
+                <h2>Invite Participants</h2>
+                <div class="invite-methods">
+                    <div class="invite-method">
+                        <h3>Meeting Link</h3>
+                        <div class="invite-link">
+                            <input type="text" id="meetingLinkInput" readonly>
+                            <button id="copyMeetingLinkBtn">Copy</button>
+                        </div>
+                    </div>
+                    <div class="invite-method">
+                        <h3>Email Invitation</h3>
+                        <input type="email" id="emailInput" placeholder="Enter email addresses">
+                        <button id="sendEmailInviteBtn">Send Invitation</button>
+                    </div>
+                </div>
+                <button class="close-modal" id="closeInviteModalBtn">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- Notification -->
-    <div class="notification" id="notification">
-        <i class="fas fa-check-circle notification-icon"></i>
-        <div class="notification-content" id="notificationText">Link copied to clipboard!</div>
-    </div>
-
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Simple Peer for WebRTC -->
-    <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // DOM Elements
-            const sidebar = document.getElementById('sidebar');
-            const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
-            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-            const welcomeScreen = document.getElementById('welcomeScreen');
-            const sessionView = document.getElementById('sessionView');
-            const createRoomBtn = document.getElementById('createRoomBtn');
-            const startSessionBtn = document.getElementById('startSessionBtn');
-            const endSessionBtn = document.getElementById('endSessionBtn');
-            const startSharingBtn = document.getElementById('startSharingBtn');
-            const toggleVideoBtn = document.getElementById('toggleVideoBtn');
-            const toggleAudioBtn = document.getElementById('toggleAudioBtn');
-            const flipCameraBtn = document.getElementById('flipCameraBtn');
-            const fullscreenBtn = document.getElementById('fullscreenBtn');
-            const remoteFullscreenBtn = document.getElementById('remoteFullscreenBtn');
-            const disconnectBtn = document.getElementById('disconnectBtn');
-            const inviteBtn = document.getElementById('inviteBtn');
-            const copyInviteLinkBtn = document.getElementById('copyInviteLinkBtn');
-            const inviteLink = document.getElementById('inviteLink');
-            const localVideo = document.getElementById('localVideo');
-            const remoteVideo = document.getElementById('remoteVideo');
-            const localVideoPlaceholder = document.getElementById('localVideoPlaceholder');
-            const remoteVideoPlaceholder = document.getElementById('remoteVideoPlaceholder');
-            const localVideoStatus = document.getElementById('localVideoStatus');
-            const remoteVideoStatus = document.getElementById('remoteVideoStatus');
-            const localVideoBadge = document.getElementById('localVideoBadge');
-            const remoteVideoBadge = document.getElementById('remoteVideoBadge');
-            const connectionStatus = document.getElementById('connectionStatus');
-            const connectionDot = document.getElementById('connectionDot');
-            const roomIdDisplay = document.getElementById('roomIdDisplay');
-            const participantsList = document.getElementById('participantsList');
-            const userName = document.getElementById('userName');
-            const userStatus = document.getElementById('userStatus');
-            const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notificationText');
-            const particlesContainer = document.getElementById('particles');
-            const inviteModal = new bootstrap.Modal(document.getElementById('inviteModal'));
-
-            // State variables
-            let localStream;
-            let remoteStream;
-            let screenStream;
-            let isSessionActive = false;
-            let isSharingScreen = false;
-            let isVideoOn = false;
-            let isAudioOn = false;
-            let currentFacingMode = 'user'; // 'user' (front) or 'environment' (back)
-            let peer;
-            let roomId;
-            let socket;
-            let isHost = false;
-
-            // Initialize the app
-            init();
-
-            function init() {
-                setupEventListeners();
-                createParticles();
-                checkUrlForRoom();
-                updateUI();
-            }
-
-            function setupEventListeners() {
-                // Sidebar toggle
-                toggleSidebarBtn.addEventListener('click', () => {
-                    sidebar.classList.toggle('active');
-                });
-
-                closeSidebarBtn.addEventListener('click', () => {
-                    sidebar.classList.remove('active');
-                });
-
-                // Room creation
-                createRoomBtn.addEventListener('click', createRoom);
-
-                // Session controls
-                startSessionBtn.addEventListener('click', startSession);
-                endSessionBtn.addEventListener('click', endSession);
-                startSharingBtn.addEventListener('click', toggleScreenShare);
-                toggleVideoBtn.addEventListener('click', toggleVideo);
-                toggleAudioBtn.addEventListener('click', toggleAudio);
-                flipCameraBtn.addEventListener('click', flipCamera);
-                fullscreenBtn.addEventListener('click', () => toggleFullscreen(localVideo));
-                remoteFullscreenBtn.addEventListener('click', () => toggleFullscreen(remoteVideo));
-                disconnectBtn.addEventListener('click', disconnect);
-
-                // Invite modal
-                inviteBtn.addEventListener('click', () => inviteModal.show());
-                copyInviteLinkBtn.addEventListener('click', copyInviteLink);
-            }
-
-            function createParticles() {
-                const particleCount = window.innerWidth < 768 ? 20 : 50;
-                
-                for (let i = 0; i < particleCount; i++) {
-                    const particle = document.createElement('div');
-                    particle.classList.add('particle');
-                    
-                    // Random size between 5px and 15px
-                    const size = Math.random() * 10 + 5;
-                    particle.style.width = `${size}px`;
-                    particle.style.height = `${size}px`;
-                    
-                    // Random position
-                    particle.style.left = `${Math.random() * 100}%`;
-                    particle.style.top = `${Math.random() * 100}%`;
-                    
-                    // Random animation duration and delay
-                    const duration = Math.random() * 20 + 10;
-                    const delay = Math.random() * 5;
-                    particle.style.animationDuration = `${duration}s`;
-                    particle.style.animationDelay = `${delay}s`;
-                    
-                    particlesContainer.appendChild(particle);
-                }
-            }
-
-            function createRoom() {
-                roomId = generateRoomId();
-                welcomeScreen.style.display = 'none';
-                sessionView.style.display = 'flex';
-                inviteLink.value = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-                
-                // Update UI
-                connectionStatus.textContent = 'Ready to connect';
-                connectionDot.className = 'status-dot';
-                roomIdDisplay.textContent = roomId;
-                
-                // Update user status
-                userName.textContent = 'Host';
-                userStatus.textContent = 'Online';
-                isHost = true;
-                
-                showNotification('Room created successfully!', 'success');
-                
-                // Initialize WebSocket connection
-                initializeSocket();
-            }
-
-            function initializeSocket() {
-                // In a real app, you would connect to your WebSocket server here
-                // This is a simplified simulation for demonstration
-                console.log('Connecting to signaling server...');
-                
-                // Simulate connection
-                setTimeout(() => {
-                    connectionStatus.textContent = 'Connected to signaling server';
-                    connectionDot.className = 'status-dot connected';
-                    showNotification('Connected to signaling server', 'success');
-                }, 1000);
-            }
-
-            async function startSession() {
-                if (!isSessionActive) {
-                    try {
-                        isSessionActive = true;
-                        
-                        // Update UI
-                        startSessionBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                        startSessionBtn.title = 'Pause Session';
-                        startSessionBtn.className = 'control-btn-large warning';
-                        
-                        // Enable controls
-                        startSharingBtn.disabled = false;
-                        toggleVideoBtn.disabled = false;
-                        toggleAudioBtn.disabled = false;
-                        flipCameraBtn.disabled = false;
-                        fullscreenBtn.disabled = false;
-                        disconnectBtn.disabled = false;
-                        
-                        // Start with audio only by default (no video)
-                        await startAudioOnly();
-                        
-                        // Update status
-                        connectionStatus.textContent = 'Connected';
-                        connectionDot.className = 'status-dot connected';
-                        
-                        // For demo purposes - simulate remote connection after delay
-                        if (isHost) {
-                            setTimeout(simulateRemoteConnection, 3000);
-                        }
-                        
-                        showNotification('Session started', 'success');
-                    } catch (error) {
-                        console.error('Error starting session:', error);
-                        showNotification('Failed to start session', 'error');
-                        isSessionActive = false;
-                        updateUI();
-                    }
-                } else {
-                    // Pause session
-                    isSessionActive = false;
-                    
-                    // Update UI
-                    startSessionBtn.innerHTML = '<i class="fas fa-play"></i>';
-                    startSessionBtn.title = 'Resume Session';
-                    startSessionBtn.className = 'control-btn-large';
-                    
-                    // Disable media streams
-                    if (localStream) {
-                        localStream.getTracks().forEach(track => track.stop());
-                    }
-                    
-                    // Show placeholders
-                    localVideo.style.display = 'none';
-                    localVideoPlaceholder.style.display = 'flex';
-                    localVideoPlaceholder.innerHTML = '<i class="fas fa-pause placeholder-icon"></i><p class="placeholder-text">Session paused</p>';
-                    localVideoStatus.innerHTML = '<small>Session paused</small>';
-                    localVideoBadge.textContent = 'Paused';
-                    localVideoBadge.className = 'video-badge warning';
-                    
-                    // Update status
-                    connectionStatus.textContent = 'Paused';
-                    connectionDot.className = 'status-dot';
-                    
-                    showNotification('Session paused', 'warning');
-                }
-                
-                updateUI();
-            }
-
-            function endSession() {
-                if (confirm('Are you sure you want to end the session? All participants will be disconnected.')) {
-                    // Stop all streams
-                    if (localStream) {
-                        localStream.getTracks().forEach(track => track.stop());
-                    }
-                    if (remoteStream) {
-                        remoteStream.getTracks().forEach(track => track.stop());
-                    }
-                    if (screenStream) {
-                        screenStream.getTracks().forEach(track => track.stop());
-                    }
-                    
-                    // Reset state
-                    isSessionActive = false;
-                    isSharingScreen = false;
-                    isVideoOn = false;
-                    isAudioOn = false;
-                    
-                    // Reset UI
-                    startSessionBtn.innerHTML = '<i class="fas fa-play"></i>';
-                    startSessionBtn.title = 'Start Session';
-                    startSessionBtn.className = 'control-btn-large';
-                    startSharingBtn.innerHTML = '<i class="fas fa-desktop"></i>';
-                    startSharingBtn.disabled = true;
-                    toggleVideoBtn.disabled = true;
-                    toggleAudioBtn.disabled = true;
-                    flipCameraBtn.disabled = true;
-                    fullscreenBtn.disabled = true;
-                    disconnectBtn.disabled = true;
-                    
-                    // Show placeholders
-                    localVideo.style.display = 'none';
-                    localVideoPlaceholder.style.display = 'flex';
-                    localVideoPlaceholder.innerHTML = '<i class="fas fa-user placeholder-icon"></i><p class="placeholder-text">Your video will appear here</p>';
-                    remoteVideo.style.display = 'none';
-                    remoteVideoPlaceholder.style.display = 'flex';
-                    remoteVideoPlaceholder.innerHTML = '<i class="fas fa-user-friends placeholder-icon"></i><p class="placeholder-text">Remote participant will appear here</p>';
-                    
-                    // Update status
-                    localVideoStatus.innerHTML = '<small>Session ended</small>';
-                    remoteVideoStatus.innerHTML = '<small>Disconnected</small>';
-                    localVideoBadge.textContent = 'Off';
-                    localVideoBadge.className = 'video-badge secondary';
-                    remoteVideoBadge.textContent = 'Offline';
-                    remoteVideoBadge.className = 'video-badge secondary';
-                    connectionStatus.textContent = 'Disconnected';
-                    connectionDot.className = 'status-dot';
-                    
-                    // Reset participants list
-                    while (participantsList.children.length > 1) {
-                        participantsList.removeChild(participantsList.lastChild);
-                    }
-                    
-                    // Update user status
-                    userStatus.textContent = 'Offline';
-                    
-                    updateUI();
-                    
-                    showNotification('Session ended', 'success');
-                }
-            }
-
-            async function startAudioOnly() {
-                try {
-                    // Stop any existing stream
-                    if (localStream) {
-                        localStream.getTracks().forEach(track => track.stop());
-                    }
-                    
-                    localStream = await navigator.mediaDevices.getUserMedia({
-                        audio: {
-                            echoCancellation: true,
-                            noiseSuppression: true,
-                            autoGainControl: true
-                        }
-                    });
-                    
-                    // Show audio-only UI
-                    localVideo.style.display = 'none';
-                    localVideoPlaceholder.style.display = 'flex';
-                    localVideoPlaceholder.innerHTML = '<i class="fas fa-microphone placeholder-icon"></i><p class="placeholder-text">Audio only mode</p>';
-                    
-                    isAudioOn = true;
-                    isVideoOn = false;
-                    updateUI();
-                    
-                    localVideoStatus.innerHTML = '<small>Audio only</small>';
-                    localVideoBadge.textContent = 'Audio';
-                    localVideoBadge.className = 'video-badge primary';
-                } catch (error) {
-                    console.error('Error accessing microphone:', error);
-                    showNotification('Could not access microphone', 'error');
-                    throw error;
-                }
-            }
-
-            async function startCamera() {
-                try {
-                    // Stop any existing stream
-                    if (localStream) {
-                        localStream.getTracks().forEach(track => track.stop());
-                    }
-                    
-                    localStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: currentFacingMode,
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        },
-                        audio: true
-                    });
-                    
-                    localVideo.srcObject = localStream;
-                    localVideo.style.display = 'block';
-                    localVideoPlaceholder.style.display = 'none';
-                    
-                    isVideoOn = true;
-                    isAudioOn = true;
-                    updateUI();
-                    
-                    localVideoStatus.innerHTML = '<small>Camera active</small>';
-                    localVideoBadge.textContent = 'Live';
-                    localVideoBadge.className = 'video-badge success';
-                } catch (error) {
-                    console.error('Error accessing camera:', error);
-                    showNotification('Could not access camera', 'error');
-                    // Fall back to audio only
-                    await startAudioOnly();
-                }
-            }
-
-            async function toggleScreenShare() {
-                try {
-                    if (isSharingScreen) {
-                        // Stop screen sharing
-                        if (screenStream) {
-                            screenStream.getTracks().forEach(track => track.stop());
-                        }
-                        startSharingBtn.title = 'Share Screen';
-                        startSharingBtn.className = 'control-btn-large secondary';
-                        isSharingScreen = false;
-                        
-                        // Switch back to camera or audio
-                        if (isVideoOn) {
-                            await startCamera();
-                        } else {
-                            await startAudioOnly();
-                        }
-                        
-                        showNotification('Screen sharing stopped', 'success');
-                    } else {
-                        // Start screen sharing
-                        screenStream = await navigator.mediaDevices.getDisplayMedia({
-                            video: {
-                                width: { ideal: 1920 },
-                                height: { ideal: 1080 }
-                            },
-                            audio: true
-                        });
-                        
-                        // Replace the video track if we had one
-                        if (localStream) {
-                            const videoTrack = screenStream.getVideoTracks()[0];
-                            if (videoTrack) {
-                                const audioTrack = screenStream.getAudioTracks()[0];
-                                
-                                // Create a new stream with screen video and audio
-                                const newStream = new MediaStream();
-                                if (videoTrack) newStream.addTrack(videoTrack);
-                                if (audioTrack) newStream.addTrack(audioTrack);
-                                
-                                localVideo.srcObject = newStream;
-                                localVideo.style.display = 'block';
-                                localStream = newStream;
-                            }
-                        }
-                        
-                        localVideoPlaceholder.style.display = 'none';
-                        
-                        startSharingBtn.title = 'Stop Sharing';
-                        startSharingBtn.className = 'control-btn-large warning';
-                        isSharingScreen = true;
-                        isVideoOn = true;
-                        
-                        // Handle when user stops sharing via browser UI
-                        screenStream.getVideoTracks()[0].onended = () => {
-                            toggleScreenShare();
-                        };
-                        
-                        localVideoStatus.innerHTML = '<small>Screen sharing</small>';
-                        localVideoBadge.textContent = 'Screen';
-                        localVideoBadge.className = 'video-badge primary';
-                        
-                        showNotification('Screen sharing started', 'success');
-                    }
-                    updateUI();
-                } catch (error) {
-                    console.error('Error toggling screen share:', error);
-                    if (error.name !== 'NotAllowedError') {
-                        showNotification('Could not start screen sharing', 'error');
-                    }
-                }
-            }
-
-            function toggleVideo() {
-                if (!isSessionActive) return;
-                
-                if (isVideoOn) {
-                    // Turn video off
-                    if (localStream) {
-                        const videoTrack = localStream.getVideoTracks()[0];
-                        if (videoTrack) {
-                            videoTrack.stop();
-                        }
-                    }
-                    
-                    // Switch to audio only
-                    startAudioOnly();
-                    
-                    showNotification('Video turned off', 'warning');
-                } else {
-                    // Turn video on
-                    startCamera();
-                    
-                    showNotification('Video turned on', 'success');
-                }
-            }
-
-            function toggleAudio() {
-                if (!isSessionActive) return;
-                
-                if (localStream) {
-                    const audioTrack = localStream.getAudioTracks()[0];
-                    if (audioTrack) {
-                        audioTrack.enabled = !audioTrack.enabled;
-                        isAudioOn = audioTrack.enabled;
-                        updateUI();
-                        
-                        showNotification(isAudioOn ? 'Audio turned on' : 'Audio turned off', isAudioOn ? 'success' : 'warning');
-                    }
-                }
-            }
-
-            async function flipCamera() {
-                if (!isSessionActive || !isVideoOn) return;
-                
-                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-                await startCamera();
-                
-                showNotification(`Camera switched to ${currentFacingMode === 'user' ? 'front' : 'rear'}`, 'success');
-            }
-
-            function toggleFullscreen(element) {
-                if (!document.fullscreenElement) {
-                    element.requestFullscreen().catch(err => {
-                        console.error('Error attempting to enable fullscreen:', err);
-                    });
-                } else {
-                    document.exitFullscreen();
-                }
-            }
-
-            function disconnect() {
-                if (confirm('Disconnect from the current session?')) {
-                    // Stop remote stream
-                    if (remoteStream) {
-                        remoteStream.getTracks().forEach(track => track.stop());
-                    }
-                    
-                    // Update UI
-                    remoteVideo.style.display = 'none';
-                    remoteVideoPlaceholder.style.display = 'flex';
-                    remoteVideoPlaceholder.innerHTML = '<i class="fas fa-user-friends placeholder-icon"></i><p class="placeholder-text">Remote participant will appear here</p>';
-                    remoteVideoStatus.innerHTML = '<small>Disconnected</small>';
-                    remoteVideoBadge.textContent = 'Offline';
-                    remoteVideoBadge.className = 'video-badge secondary';
-                    
-                    // Reset participants list
-                    while (participantsList.children.length > 1) {
-                        participantsList.removeChild(participantsList.lastChild);
-                    }
-                    
-                    showNotification('Disconnected from participant', 'warning');
-                }
-            }
-
-            function copyInviteLink() {
-                inviteLink.select();
-                document.execCommand('copy');
-                showNotification('Invite link copied to clipboard!', 'success');
-                inviteModal.hide();
-            }
-
-            function showNotification(message, type) {
-                notificationText.textContent = message;
-                
-                // Set icon and class based on type
-                const icon = notification.querySelector('.notification-icon');
-                icon.className = `fas ${
-                    type === 'success' ? 'fa-check-circle' :
-                    type === 'error' ? 'fa-exclamation-circle' :
-                    type === 'warning' ? 'fa-exclamation-triangle' :
-                    'fa-info-circle'
-                } notification-icon`;
-                
-                notification.className = `notification notification-${type} show`;
-                
-                // Hide after 3 seconds
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000);
-            }
-
-            function checkUrlForRoom() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const roomParam = urlParams.get('room');
-                
-                if (roomParam) {
-                    // Join existing room
-                    roomId = roomParam;
-                    welcomeScreen.style.display = 'none';
-                    sessionView.style.display = 'flex';
-                    inviteLink.value = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-                    
-                    // Update UI
-                    connectionStatus.textContent = 'Ready to connect';
-                    connectionDot.className = 'status-dot';
-                    roomIdDisplay.textContent = roomId;
-                    
-                    // Update user status
-                    userName.textContent = 'Participant';
-                    userStatus.textContent = 'Online';
-                    isHost = false;
-                    
-                    // Initialize WebSocket connection
-                    initializeSocket();
-                }
-            }
-
-            function updateUI() {
-                // Update control buttons
-                toggleVideoBtn.title = isVideoOn ? 'Turn Off Video' : 'Turn On Video';
-                toggleVideoBtn.innerHTML = isVideoOn ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
-                
-                toggleAudioBtn.title = isAudioOn ? 'Turn Off Audio' : 'Turn On Audio';
-                toggleAudioBtn.innerHTML = isAudioOn ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-            }
-
-            function generateRoomId() {
-                const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-                const numbers = '23456789';
-                let id = '';
-                
-                // Add 2 letters
-                for (let i = 0; i < 2; i++) {
-                    id += letters.charAt(Math.floor(Math.random() * letters.length));
-                }
-                
-                // Add 4 numbers
-                for (let i = 0; i < 4; i++) {
-                    id += numbers.charAt(Math.floor(Math.random() * numbers.length));
-                }
-                
-                return id;
-            }
-
-            // Simulate a remote connection
-            function simulateRemoteConnection() {
-                if (!isSessionActive) return;
-                
-                // Create a different looking stream for the remote user
-                const canvas = document.createElement('canvas');
-                canvas.width = 640;
-                canvas.height = 360;
-                const ctx = canvas.getContext('2d');
-                
-                // Create a gradient background
-                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-                gradient.addColorStop(0, '#3498db');
-                gradient.addColorStop(1, '#2ecc71');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // Add text
-                ctx.fillStyle = 'white';
-                ctx.font = '30px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('Remote Participant', canvas.width/2, canvas.height/2);
-                
-                // Convert canvas to stream
-                const stream = canvas.captureStream(15);
-                
-                // Display the remote stream
-                remoteVideo.srcObject = stream;
-                remoteVideo.style.display = 'block';
-                remoteVideoPlaceholder.style.display = 'none';
-                
-                // Add a participant to the list
-                const newParticipant = document.createElement('li');
-                newParticipant.className = 'd-flex align-items-center mb-3 p-3 rounded';
-                newParticipant.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                newParticipant.style.backdropFilter = 'blur(5px)';
-                newParticipant.innerHTML = `
-                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; margin-right: 12px;">
-                        R
-                    </div>
-                    <div>
-                        <div class="fw-semibold">Remote User</div>
-                        <small class="text-white-50">Participant</small>
-                    </div>
-                    <div class="ms-auto">
-                        <div class="status-dot connected"></div>
-                    </div>
-                `;
-                participantsList.appendChild(newParticipant);
-                
-                // Update status
-                remoteVideoStatus.innerHTML = '<small>Connected</small>';
-                remoteVideoBadge.textContent = 'Live';
-                remoteVideoBadge.className = 'video-badge success';
-                
-                showNotification('Participant joined the session', 'success');
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
