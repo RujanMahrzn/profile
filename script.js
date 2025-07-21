@@ -48,6 +48,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let participants = [];
     let chatMessagesData = [];
     
+    // WebRTC variables
+    let peerConnections = {};
+    let dataChannels = {};
+    let signalingSocket;
+    let localParticipantId = generateId();
+    let currentRoomId = '';
+    let localUserName = 'You';
+    
     // Initialize the app
     init();
     
@@ -84,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tab.addEventListener('click', function() {
                 const tabId = this.getAttribute('data-tab');
                 switchTab(tabId);
+                this.classList.remove('has-notification');
             });
         });
         
@@ -134,6 +143,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return Math.random().toString(36).substring(2, 8).toUpperCase();
     }
     
+    function generateId() {
+        return Math.random().toString(36).substring(2, 15);
+    }
+    
     function updateMeetingIdDisplay() {
         document.getElementById('meetingIdDisplay').textContent = `Meeting ID: ${meetingId}`;
         meetingLinkInput.value = `${window.location.origin}?meeting=${meetingId}`;
@@ -141,28 +154,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function startNewMeeting() {
         try {
+            // Connect to signaling server
+            signalingSocket = new WebSocket('wss://your-signaling-server.com');
+            setupSignalingSocket();
+            
             // Get user media
             localStream = await navigator.mediaDevices.getUserMedia({
                 audio: true,
                 video: true
             });
             
-            // Start the meeting
+            currentRoomId = meetingId || generateMeetingId();
+            
+            // Join the room
+            signalingSocket.send(JSON.stringify({
+                type: 'join',
+                roomId: currentRoomId,
+                participantId: localParticipantId,
+                name: localUserName
+            }));
+            
+            // Start the meeting UI
             startMeeting();
             
             // Add local participant
-            addParticipant('You', true, true, true);
-            
-            // Simulate remote participants joining
-            setTimeout(() => {
-                addParticipant('John Doe', true, true, false);
-                addParticipant('Jane Smith', true, false, false);
-                addParticipant('Mike Johnson', false, true, false);
-            }, 2000);
+            addParticipant(localUserName, true, true, true, localParticipantId);
             
         } catch (error) {
-            console.error('Error accessing media devices:', error);
-            alert('Could not access your camera or microphone. Please check your permissions.');
+            console.error('Error starting meeting:', error);
+            alert('Could not start the meeting. Please check your camera/microphone permissions.');
         }
     }
     
@@ -179,6 +199,272 @@ document.addEventListener('DOMContentLoaded', function() {
         startNewMeeting();
     }
     
+    function setupSignalingSocket() {
+        signalingSocket.onopen = () => {
+            console.log('Connected to signaling server');
+        };
+        
+        signalingSocket.onclose = () => {
+            console.log('Disconnected from signaling server');
+            alert('Connection lost. Trying to reconnect...');
+            setTimeout(() => {
+                setupSignalingSocket();
+            }, 3000);
+        };
+        
+        signalingSocket.onerror = (error) => {
+            console.error('Signaling error:', error);
+        };
+        
+        signalingSocket.onmessage = async (event) => {
+            const message = JSON.parse(event.data);
+            
+            switch (message.type) {
+                case 'participants':
+                    handleExistingParticipants(message.participants);
+                    break;
+                case 'join':
+                    handleNewParticipant(message);
+                    break;
+                case 'leave':
+                    handleParticipantLeft(message.participantId);
+                    break;
+                case 'offer':
+                    await handleOffer(message);
+                    break;
+                case 'answer':
+                    await handleAnswer(message);
+                    break;
+                case 'candidate':
+                    await handleCandidate(message);
+                    break;
+                case 'chat':
+                    handleRemoteChat(message);
+                    break;
+            }
+        };
+    }
+    
+    async function handleExistingParticipants(existingParticipants) {
+        // Create peer connections for existing participants
+        for (const participant of existingParticipants) {
+            await createPeerConnection(participant.id);
+            
+            // Send offer to the existing participant
+            const peerConnection = peerConnections[participant.id];
+            const offer = await peerConnection.createOffer({
+                offerToReceiveAudio: true,
+                offerToReceiveVideo: true
+            });
+            await peerConnection.setLocalDescription(offer);
+            
+            signalingSocket.send(JSON.stringify({
+                type: 'offer',
+                roomId: currentRoomId,
+                targetParticipantId: participant.id,
+                offer: offer,
+                senderId: localParticipantId,
+                senderName: localUserName
+            }));
+            
+            // Add to participants list
+            addParticipant(participant.name, true, true, false, participant.id);
+        }
+    }
+    
+    async function handleNewParticipant(message) {
+        const { participantId, name } = message;
+        
+        // Add to participants list
+        addParticipant(name, true, true, false, participantId);
+        
+        // Create peer connection
+        await createPeerConnection(participantId);
+        
+        // Send offer
+        const peerConnection = peerConnections[participantId];
+        const offer = await peerConnection.createOffer({
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: true
+        });
+        await peerConnection.setLocalDescription(offer);
+        
+        signalingSocket.send(JSON.stringify({
+            type: 'offer',
+            roomId: currentRoomId,
+            targetParticipantId: participantId,
+            offer: offer,
+            senderId: localParticipantId,
+            senderName: localUserName
+        }));
+    }
+    
+    async function createPeerConnection(participantId) {
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                // Add your TURN server credentials here for production
+                // {
+                //     urls: 'turn:your.turn.server:3478',
+                //     username: 'username',
+                //     credential: 'password'
+                // }
+            ]
+        };
+        
+        const peerConnection = new RTCPeerConnection(configuration);
+        peerConnections[participantId] = peerConnection;
+        
+        // Add local stream to connection
+        if (localStream) {
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+        }
+        
+        // Set up data channel for chat
+        if (participantId > localParticipantId) { // Only one peer creates the channel
+            const channel = peerConnection.createDataChannel('chat', {
+                ordered: true,
+                maxPacketLifeTime: 3000
+            });
+            setupDataChannel(participantId, channel);
+        }
+        
+        peerConnection.ondatachannel = (event) => {
+            if (event.channel.label === 'chat') {
+                setupDataChannel(participantId, event.channel);
+            }
+        };
+        
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                signalingSocket.send(JSON.stringify({
+                    type: 'candidate',
+                    roomId: currentRoomId,
+                    targetParticipantId: participantId,
+                    candidate: event.candidate,
+                    senderId: localParticipantId
+                }));
+            }
+        };
+        
+        peerConnection.ontrack = (event) => {
+            // Handle remote streams (simplified - in real app you'd display these)
+            console.log('Received remote track from', participantId, event.streams[0]);
+            
+            // Update participant's video status
+            const participant = participants.find(p => p.id === participantId);
+            if (participant) {
+                participant.isVideoOn = true;
+                updateParticipantUI(participantId);
+            }
+        };
+        
+        peerConnection.oniceconnectionstatechange = () => {
+            console.log(`ICE connection state with ${participantId}:`, peerConnection.iceConnectionState);
+            if (peerConnection.iceConnectionState === 'disconnected' || 
+                peerConnection.iceConnectionState === 'failed') {
+                // Attempt to reconnect
+                setTimeout(() => {
+                    if (peerConnection.iceConnectionState !== 'connected') {
+                        restartIce(peerConnection);
+                    }
+                }, 2000);
+            }
+        };
+        
+        return peerConnection;
+    }
+    
+    function setupDataChannel(participantId, channel) {
+        dataChannels[participantId] = channel;
+        
+        channel.onopen = () => {
+            console.log('Data channel opened with', participantId);
+        };
+        
+        channel.onclose = () => {
+            console.log('Data channel closed with', participantId);
+            delete dataChannels[participantId];
+        };
+        
+        channel.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            if (message.type === 'chat') {
+                handleRemoteChat(message);
+            }
+        };
+    }
+    
+    async function handleOffer(message) {
+        const { offer, senderId, senderName } = message;
+        await createPeerConnection(senderId);
+        
+        const peerConnection = peerConnections[senderId];
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        
+        signalingSocket.send(JSON.stringify({
+            type: 'answer',
+            roomId: currentRoomId,
+            targetParticipantId: senderId,
+            answer: answer,
+            senderId: localParticipantId
+        }));
+    }
+    
+    async function handleAnswer(message) {
+        const { answer, senderId } = message;
+        const peerConnection = peerConnections[senderId];
+        if (peerConnection) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        }
+    }
+    
+    async function handleCandidate(message) {
+        const { candidate, senderId } = message;
+        const peerConnection = peerConnections[senderId];
+        if (peerConnection) {
+            try {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (e) {
+                console.error('Error adding ICE candidate:', e);
+            }
+        }
+    }
+    
+    function handleParticipantLeft(participantId) {
+        // Close peer connection
+        if (peerConnections[participantId]) {
+            peerConnections[participantId].close();
+            delete peerConnections[participantId];
+        }
+        
+        // Remove data channel
+        if (dataChannels[participantId]) {
+            delete dataChannels[participantId];
+        }
+        
+        // Remove from UI
+        const participantElement = document.querySelector(`.participant-item[data-id="${participantId}"]`);
+        if (participantElement) {
+            participantElement.remove();
+        }
+        
+        // Update participants list
+        participants = participants.filter(p => p.id !== participantId);
+        updateParticipantCount();
+    }
+    
+    function restartIce(peerConnection) {
+        if (peerConnection) {
+            peerConnection.restartIce();
+        }
+    }
+    
     function startMeeting() {
         // Show meeting screen
         preMeetingScreen.style.display = 'none';
@@ -190,7 +476,9 @@ document.addEventListener('DOMContentLoaded', function() {
         timerInterval = setInterval(updateMeetingTimer, 1000);
         
         // Display local video
-        mainVideo.srcObject = localStream;
+        if (localStream) {
+            mainVideo.srcObject = localStream;
+        }
         
         // Update UI
         updateParticipantCount();
@@ -256,9 +544,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     audio: true
                 });
                 
-                // Replace the video track in the main video
+                // Replace the video track in all peer connections
                 const videoTrack = screenStream.getVideoTracks()[0];
+                
+                // Update local display
                 mainVideo.srcObject = new MediaStream([videoTrack]);
+                
+                // Replace tracks in all peer connections
+                Object.values(peerConnections).forEach(pc => {
+                    const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+                    if (sender) {
+                        sender.replaceTrack(videoTrack);
+                    }
+                });
                 
                 isScreenSharing = true;
                 shareScreenBtn.innerHTML = '<i class="fas fa-stop"></i><span>Stop Sharing</span>';
@@ -271,7 +569,21 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Stop screen sharing
                 screenStream.getTracks().forEach(track => track.stop());
-                mainVideo.srcObject = localStream;
+                
+                // Restore local video
+                const videoTrack = localStream.getVideoTracks()[0];
+                mainVideo.srcObject = new MediaStream([
+                    videoTrack,
+                    ...localStream.getAudioTracks()
+                ]);
+                
+                // Restore tracks in all peer connections
+                Object.values(peerConnections).forEach(pc => {
+                    const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+                    if (sender && videoTrack) {
+                        sender.replaceTrack(videoTrack);
+                    }
+                });
                 
                 isScreenSharing = false;
                 shareScreenBtn.innerHTML = '<i class="fas fa-desktop"></i><span>Share Screen</span>';
@@ -283,7 +595,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function endMeeting() {
-        if (confirm('Are you sure you want to end the meeting for everyone?')) {
+        if (confirm('Are you sure you want to end the meeting?')) {
+            // Close all peer connections
+            Object.values(peerConnections).forEach(pc => pc.close());
+            peerConnections = {};
+            dataChannels = {};
+            
+            // Close signaling connection
+            if (signalingSocket) {
+                signalingSocket.close();
+            }
+            
             // Stop all media streams
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
@@ -307,6 +629,8 @@ document.addEventListener('DOMContentLoaded', function() {
             isMicOn = true;
             isVideoOn = true;
             isScreenSharing = false;
+            localParticipantId = generateId();
+            currentRoomId = '';
             
             // Clear participants list
             participantsList.innerHTML = '';
@@ -322,9 +646,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function addParticipant(name, isVideoOn, isMicOn, isLocal) {
+    function addParticipant(name, isVideoOn, isMicOn, isLocal, id = localParticipantId) {
         const participant = {
-            id: Date.now().toString(),
+            id,
             name,
             isVideoOn,
             isMicOn,
@@ -359,17 +683,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updateLocalParticipant() {
-        const localParticipant = participants.find(p => p.isLocal);
+        const localParticipant = participants.find(p => p.id === localParticipantId);
         if (localParticipant) {
             localParticipant.isMicOn = isMicOn;
             localParticipant.isVideoOn = isVideoOn;
-            
-            const participantElement = document.querySelector(`.participant-item[data-id="${localParticipant.id}"]`);
-            if (participantElement) {
-                const statusElement = participantElement.querySelector('.participant-status');
+            updateParticipantUI(localParticipantId);
+        }
+    }
+    
+    function updateParticipantUI(participantId) {
+        const participant = participants.find(p => p.id === participantId);
+        if (!participant) return;
+        
+        const participantElement = document.querySelector(`.participant-item[data-id="${participantId}"]`);
+        if (participantElement) {
+            const statusElement = participantElement.querySelector('.participant-status');
+            if (statusElement) {
                 statusElement.innerHTML = `
-                    ${isMicOn ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>'}
-                    ${isVideoOn ? '<i class="fas fa-video"></i>' : '<i class="fas fa-video-slash"></i>'}
+                    ${participant.isMicOn ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>'}
+                    ${participant.isVideoOn ? '<i class="fas fa-video"></i>' : '<i class="fas fa-video-slash"></i>'}
                 `;
             }
         }
@@ -434,44 +766,53 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!message) return;
         
         const newMessage = {
-            id: Date.now(),
+            type: 'chat',
+            senderId: localParticipantId,
+            senderName: localUserName,
+            content: message,
+            timestamp: Date.now()
+        };
+        
+        // Send via signaling server (fallback)
+        signalingSocket.send(JSON.stringify({
+            type: 'chat',
+            roomId: currentRoomId,
+            ...newMessage
+        }));
+        
+        // Also try to send via data channels
+        Object.entries(dataChannels).forEach(([id, channel]) => {
+            if (channel.readyState === 'open') {
+                channel.send(JSON.stringify(newMessage));
+            }
+        });
+        
+        // Render locally
+        renderMessage({
+            id: newMessage.timestamp,
             sender: 'You',
             content: message,
             time: new Date()
-        };
+        });
         
-        chatMessagesData.push(newMessage);
-        renderMessage(newMessage);
-        
-        // Clear input
         chatMessageInput.value = '';
-        
-        // Scroll to bottom
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function handleRemoteChat(message) {
+        renderMessage({
+            id: message.timestamp,
+            sender: message.senderName,
+            content: message.content,
+            time: new Date(message.timestamp)
+        });
         
-        // Simulate response
-        setTimeout(() => {
-            const responses = [
-                "Thanks for the update!",
-                "I agree with that.",
-                "Can you explain that further?",
-                "Let's discuss this later.",
-                "Great point!"
-            ];
-            
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            
-            const responseMessage = {
-                id: Date.now(),
-                sender: participants[1]?.name || 'Participant',
-                content: randomResponse,
-                time: new Date()
-            };
-            
-            chatMessagesData.push(responseMessage);
-            renderMessage(responseMessage);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 1000);
+        // Show notification if chat tab isn't active
+        if (!document.querySelector('.sidebar-tab[data-tab="chat"]').classList.contains('active')) {
+            document.querySelector('.sidebar-tab[data-tab="chat"]').classList.add('has-notification');
+        }
+        
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
     
     function renderMessage(message) {
@@ -488,36 +829,4 @@ document.addEventListener('DOMContentLoaded', function() {
         
         chatMessages.appendChild(messageElement);
     }
-    
-    // Simulate incoming chat messages
-    setInterval(() => {
-        if (participants.length > 1 && Math.random() > 0.7) {
-            const randomMessages = [
-                "Can everyone hear me okay?",
-                "I think we should move on to the next topic.",
-                "Does anyone have any questions?",
-                "I'll share my screen to show what I mean.",
-                "Let me know if you need me to repeat that."
-            ];
-            
-            const randomMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)];
-            
-            const newMessage = {
-                id: Date.now(),
-                sender: participants[1].name,
-                content: randomMessage,
-                time: new Date()
-            };
-            
-            chatMessagesData.push(newMessage);
-            renderMessage(newMessage);
-            
-            // If chat tab is not active, show notification
-            if (!document.querySelector('.sidebar-tab[data-tab="chat"]').classList.contains('active')) {
-                document.querySelector('.sidebar-tab[data-tab="chat"]').classList.add('has-notification');
-            }
-            
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    }, 10000);
 });
