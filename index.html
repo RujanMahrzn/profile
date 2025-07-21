@@ -8,8 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
@@ -29,25 +27,18 @@
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fb;
             color: var(--dark);
             overflow: hidden;
             height: 100vh;
+            margin: 0;
         }
 
-        /* Layout */
         .app-container {
             display: flex;
             height: 100vh;
-            overflow: hidden;
         }
 
         /* Sidebar */
@@ -60,10 +51,6 @@
             transition: var(--transition);
             z-index: 100;
             box-shadow: var(--shadow-md);
-        }
-
-        .sidebar-collapsed {
-            transform: translateX(-100%);
         }
 
         .sidebar-header {
@@ -102,12 +89,6 @@
             justify-content: space-between;
             align-items: center;
             z-index: 10;
-        }
-
-        .room-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
         }
 
         .connection-status {
@@ -162,11 +143,6 @@
             display: flex;
             flex-direction: column;
             height: 300px;
-        }
-
-        .video-card:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
         }
 
         .video-header {
@@ -249,7 +225,6 @@
 
         .control-btn:hover {
             background-color: rgba(0, 0, 0, 0.7);
-            transform: scale(1.1);
         }
 
         .video-footer {
@@ -304,110 +279,6 @@
             background-color: var(--warning);
         }
 
-        /* Participants */
-        .participants-section {
-            padding: 16px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .section-title {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .participant-list {
-            list-style: none;
-        }
-
-        .participant-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            background-color: rgba(255, 255, 255, 0.1);
-            transition: var(--transition);
-        }
-
-        .participant-item:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .participant-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            font-weight: 600;
-        }
-
-        .participant-info {
-            flex: 1;
-        }
-
-        .participant-name {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .participant-status {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--success);
-            margin-left: auto;
-        }
-
-        /* User Profile */
-        .user-profile {
-            padding: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--accent);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-        }
-
-        .user-details {
-            flex: 1;
-        }
-
-        .user-name {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .user-status {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
         /* Welcome Screen */
         .welcome-screen {
             display: flex;
@@ -424,7 +295,6 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 20px;
-            color: var(--dark);
             background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -456,161 +326,6 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
             color: white;
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: var(--transition);
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .modal-content {
-            background-color: white;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: var(--shadow-lg);
-            transform: translateY(20px);
-            transition: var(--transition);
-            overflow: hidden;
-        }
-
-        .modal-overlay.active .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--light-gray);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.25rem;
-            cursor: pointer;
-            color: var(--gray);
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .modal-footer {
-            padding: 16px 20px;
-            border-top: 1px solid var(--light-gray);
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--light-gray);
-            border-radius: 8px;
-            font-family: inherit;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-        }
-
-        .input-group {
-            display: flex;
-        }
-
-        .input-group input {
-            flex: 1;
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-
-        .input-group button {
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-            color: white;
-        }
-
-        .btn-secondary {
-            background-color: var(--light-gray);
-            color: var(--dark);
-            border: none;
-        }
-
-        .btn-secondary:hover {
-            background-color: #d1d7e0;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.8rem;
         }
 
         /* Notification */
@@ -648,68 +363,18 @@
             color: var(--danger);
         }
 
-        .notification-content {
-            font-size: 0.9rem;
-        }
-
         /* Responsive */
         @media (max-width: 992px) {
             .sidebar {
                 position: fixed;
-                left: 0;
+                left: -280px;
                 top: 0;
                 bottom: 0;
-                transform: translateX(-100%);
             }
 
             .sidebar.active {
-                transform: translateX(0);
+                left: 0;
             }
-
-            .sidebar-toggle {
-                display: flex;
-            }
-        }
-
-        /* Utility Classes */
-        .d-flex {
-            display: flex;
-        }
-
-        .align-items-center {
-            align-items: center;
-        }
-
-        .justify-content-center {
-            justify-content: center;
-        }
-
-        .gap-2 {
-            gap: 8px;
-        }
-
-        .gap-3 {
-            gap: 12px;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .text-muted {
-            color: var(--gray);
-        }
-
-        .mt-3 {
-            margin-top: 12px;
-        }
-
-        .mb-3 {
-            margin-bottom: 12px;
-        }
-
-        .w-100 {
-            width: 100%;
         }
     </style>
 </head>
@@ -723,26 +388,25 @@
                     <span>VisionShare</span>
                 </div>
             </div>
-
-            <div class="participants-section">
-                <h3 class="section-title">Participants</h3>
-                <ul class="participant-list" id="participantsList">
-                    <li class="participant-item">
-                        <div class="participant-avatar">Y</div>
-                        <div class="participant-info">
-                            <div class="participant-name">You</div>
-                            <div class="participant-status">Host</div>
+            <div class="flex-grow-1 p-3 overflow-auto">
+                <h5 class="text-white-50 mb-3">Participants</h5>
+                <ul class="list-unstyled" id="participantsList">
+                    <li class="d-flex align-items-center mb-2 p-2 rounded" style="background-color: rgba(255,255,255,0.1)">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; margin-right: 10px;">Y</div>
+                        <div>
+                            <div class="fw-medium">You</div>
+                            <small class="text-white-50">Host</small>
                         </div>
-                        <div class="status-indicator"></div>
                     </li>
                 </ul>
             </div>
-
-            <div class="user-profile">
-                <div class="user-avatar">G</div>
-                <div class="user-details">
-                    <div class="user-name" id="userName">Guest</div>
-                    <div class="user-status">Offline</div>
+            <div class="p-3 border-top border-secondary">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-accent text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; margin-right: 10px;">G</div>
+                    <div>
+                        <div class="fw-medium" id="userName">Guest</div>
+                        <small class="text-white-50" id="userStatus">Offline</small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -761,29 +425,26 @@
                 </button>
             </div>
 
-            <!-- Session View (hidden initially) -->
+            <!-- Session View -->
             <div id="sessionView" style="display: none;">
                 <!-- Toolbar -->
                 <div class="toolbar">
-                    <button class="control-btn secondary sidebar-toggle" id="toggleSidebarBtn">
+                    <button class="btn btn-outline-secondary me-2 d-md-none" id="toggleSidebarBtn">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div class="room-info">
+                    <div class="d-flex align-items-center">
                         <div class="connection-status">
                             <div class="status-dot" id="connectionDot"></div>
                             <span id="connectionStatus">Disconnected</span>
                         </div>
-                        <span class="badge bg-secondary" id="roomStatus">Not Started</span>
+                        <span class="badge bg-secondary ms-2" id="roomStatus">Not Started</span>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary btn-sm" id="inviteBtn">
-                            <i class="fas fa-user-plus"></i> Invite
+                    <div>
+                        <button class="btn btn-outline-primary me-2" id="inviteBtn">
+                            <i class="fas fa-user-plus me-1"></i> Invite
                         </button>
-                        <button class="btn btn-secondary btn-sm" id="settingsBtn">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" id="endSessionBtn">
-                            <i class="fas fa-stop"></i> End
+                        <button class="btn btn-outline-danger" id="endSessionBtn">
+                            <i class="fas fa-stop me-1"></i> End Session
                         </button>
                     </div>
                 </div>
@@ -869,42 +530,41 @@
     </div>
 
     <!-- Invite Modal -->
-    <div class="modal-overlay" id="inviteModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Invite Participants</span>
-                </h3>
-                <button class="modal-close" id="closeInviteModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Share this secure link:</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="inviteLink" readonly>
-                        <button class="btn btn-primary" id="copyInviteLinkBtn">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
+    <div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Invite Participants</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label for="inviteLink" class="form-label fw-bold mb-3">Share this secure link:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control py-2" id="inviteLink" readonly>
+                            <button class="btn btn-primary" id="copyInviteLinkBtn">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold mb-3">Or send invitation via:</label>
+                        <div class="d-flex flex-column gap-2">
+                            <button class="btn btn-outline-primary">
+                                <i class="fab fa-whatsapp me-2"></i> WhatsApp
+                            </button>
+                            <button class="btn btn-outline-info">
+                                <i class="fab fa-telegram me-2"></i> Telegram
+                            </button>
+                            <button class="btn btn-outline-secondary">
+                                <i class="fas fa-envelope me-2"></i> Email
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group mt-3">
-                    <label class="form-label">Or send via:</label>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-secondary w-100">
-                            <i class="fab fa-whatsapp"></i> WhatsApp
-                        </button>
-                        <button class="btn btn-secondary w-100">
-                            <i class="fab fa-telegram"></i> Telegram
-                        </button>
-                        <button class="btn btn-secondary w-100">
-                            <i class="fas fa-envelope"></i> Email
-                        </button>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelInviteBtn">Close</button>
             </div>
         </div>
     </div>
@@ -938,9 +598,6 @@
             const remoteFullscreenBtn = document.getElementById('remoteFullscreenBtn');
             const disconnectBtn = document.getElementById('disconnectBtn');
             const inviteBtn = document.getElementById('inviteBtn');
-            const closeInviteModal = document.getElementById('closeInviteModal');
-            const cancelInviteBtn = document.getElementById('cancelInviteBtn');
-            const inviteModal = document.getElementById('inviteModal');
             const copyInviteLinkBtn = document.getElementById('copyInviteLinkBtn');
             const inviteLink = document.getElementById('inviteLink');
             const localVideo = document.getElementById('localVideo');
@@ -956,8 +613,10 @@
             const roomStatus = document.getElementById('roomStatus');
             const participantsList = document.getElementById('participantsList');
             const userName = document.getElementById('userName');
+            const userStatus = document.getElementById('userStatus');
             const notification = document.getElementById('notification');
             const notificationText = document.getElementById('notificationText');
+            const inviteModal = new bootstrap.Modal(document.getElementById('inviteModal'));
 
             // State variables
             let localStream;
@@ -970,7 +629,8 @@
             let currentFacingMode = 'user'; // 'user' (front) or 'environment' (back)
             let peer;
             let roomId;
-            let remoteStreamTimer;
+            let socket;
+            let isHost = false;
 
             // Initialize the app
             init();
@@ -983,7 +643,9 @@
 
             function setupEventListeners() {
                 // Sidebar toggle
-                toggleSidebarBtn.addEventListener('click', toggleSidebar);
+                toggleSidebarBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                });
 
                 // Room creation
                 createRoomBtn.addEventListener('click', createRoom);
@@ -1000,14 +662,8 @@
                 disconnectBtn.addEventListener('click', disconnect);
 
                 // Invite modal
-                inviteBtn.addEventListener('click', showInviteModal);
-                closeInviteModal.addEventListener('click', hideInviteModal);
-                cancelInviteBtn.addEventListener('click', hideInviteModal);
+                inviteBtn.addEventListener('click', () => inviteModal.show());
                 copyInviteLinkBtn.addEventListener('click', copyInviteLink);
-            }
-
-            function toggleSidebar() {
-                sidebar.classList.toggle('active');
             }
 
             function createRoom() {
@@ -1023,43 +679,68 @@
                 roomStatus.className = 'badge bg-secondary';
                 
                 // Update user status
-                if (userName) userName.textContent = 'Host';
-                const userStatus = document.querySelector('.user-status');
-                if (userStatus) userStatus.textContent = 'Online';
+                userName.textContent = 'Host';
+                userStatus.textContent = 'Online';
+                isHost = true;
                 
                 showNotification('Room created successfully!', 'success');
+                
+                // Initialize WebSocket connection
+                initializeSocket();
+            }
+
+            function initializeSocket() {
+                // In a real app, you would connect to your WebSocket server here
+                // This is a simplified simulation for demonstration
+                console.log('Connecting to signaling server...');
+                
+                // Simulate connection
+                setTimeout(() => {
+                    connectionStatus.textContent = 'Connected to signaling server';
+                    connectionDot.className = 'status-dot connected';
+                    showNotification('Connected to signaling server', 'success');
+                }, 1000);
             }
 
             async function startSession() {
                 if (!isSessionActive) {
-                    isSessionActive = true;
-                    
-                    // Update UI
-                    startSessionBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                    startSessionBtn.title = 'Pause Session';
-                    startSessionBtn.className = 'control-btn-large warning';
-                    
-                    // Enable controls
-                    startSharingBtn.disabled = false;
-                    toggleVideoBtn.disabled = false;
-                    toggleAudioBtn.disabled = false;
-                    flipCameraBtn.disabled = false;
-                    fullscreenBtn.disabled = false;
-                    disconnectBtn.disabled = false;
-                    
-                    // Start with audio only by default (no video)
-                    await startAudioOnly();
-                    
-                    // Update status
-                    roomStatus.textContent = '1 participant';
-                    roomStatus.className = 'badge bg-primary';
-                    connectionStatus.textContent = 'Connected';
-                    connectionDot.className = 'status-dot connected';
-                    
-                    // For demo purposes - simulate remote connection after delay
-                    setTimeout(simulateRemoteConnection, 3000);
-                    
-                    showNotification('Session started', 'success');
+                    try {
+                        isSessionActive = true;
+                        
+                        // Update UI
+                        startSessionBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                        startSessionBtn.title = 'Pause Session';
+                        startSessionBtn.className = 'control-btn-large warning';
+                        
+                        // Enable controls
+                        startSharingBtn.disabled = false;
+                        toggleVideoBtn.disabled = false;
+                        toggleAudioBtn.disabled = false;
+                        flipCameraBtn.disabled = false;
+                        fullscreenBtn.disabled = false;
+                        disconnectBtn.disabled = false;
+                        
+                        // Start with audio only by default (no video)
+                        await startAudioOnly();
+                        
+                        // Update status
+                        roomStatus.textContent = '1 participant';
+                        roomStatus.className = 'badge bg-primary';
+                        connectionStatus.textContent = 'Connected';
+                        connectionDot.className = 'status-dot connected';
+                        
+                        // For demo purposes - simulate remote connection after delay
+                        if (isHost) {
+                            setTimeout(simulateRemoteConnection, 3000);
+                        }
+                        
+                        showNotification('Session started', 'success');
+                    } catch (error) {
+                        console.error('Error starting session:', error);
+                        showNotification('Failed to start session', 'error');
+                        isSessionActive = false;
+                        updateUI();
+                    }
                 } else {
                     // Pause session
                     isSessionActive = false;
@@ -1075,16 +756,12 @@
                     }
                     
                     // Show placeholders
-                    if (localVideo) localVideo.style.display = 'none';
-                    if (localVideoPlaceholder) {
-                        localVideoPlaceholder.style.display = 'flex';
-                        localVideoPlaceholder.innerHTML = '<i class="fas fa-pause placeholder-icon"></i><p>Session paused</p>';
-                    }
-                    if (localVideoStatus) localVideoStatus.textContent = 'Session paused';
-                    if (localVideoBadge) {
-                        localVideoBadge.textContent = 'Paused';
-                        localVideoBadge.className = 'video-badge bg-warning';
-                    }
+                    localVideo.style.display = 'none';
+                    localVideoPlaceholder.style.display = 'flex';
+                    localVideoPlaceholder.innerHTML = '<i class="fas fa-pause placeholder-icon"></i><p>Session paused</p>';
+                    localVideoStatus.textContent = 'Session paused';
+                    localVideoBadge.textContent = 'Paused';
+                    localVideoBadge.className = 'video-badge bg-warning';
                     
                     // Update status
                     roomStatus.textContent = 'Paused';
@@ -1130,43 +807,32 @@
                     disconnectBtn.disabled = true;
                     
                     // Show placeholders
-                    if (localVideo) localVideo.style.display = 'none';
-                    if (localVideoPlaceholder) {
-                        localVideoPlaceholder.style.display = 'flex';
-                        localVideoPlaceholder.innerHTML = '<i class="fas fa-user placeholder-icon"></i><p>Your video will appear here</p>';
-                    }
-                    if (remoteVideo) remoteVideo.style.display = 'none';
-                    if (remoteVideoPlaceholder) {
-                        remoteVideoPlaceholder.style.display = 'flex';
-                        remoteVideoPlaceholder.innerHTML = '<i class="fas fa-user-friends placeholder-icon"></i><p>Remote participant will appear here</p>';
-                    }
+                    localVideo.style.display = 'none';
+                    localVideoPlaceholder.style.display = 'flex';
+                    localVideoPlaceholder.innerHTML = '<i class="fas fa-user placeholder-icon"></i><p>Your video will appear here</p>';
+                    remoteVideo.style.display = 'none';
+                    remoteVideoPlaceholder.style.display = 'flex';
+                    remoteVideoPlaceholder.innerHTML = '<i class="fas fa-user-friends placeholder-icon"></i><p>Remote participant will appear here</p>';
                     
                     // Update status
-                    if (localVideoStatus) localVideoStatus.textContent = 'Session ended';
-                    if (remoteVideoStatus) remoteVideoStatus.textContent = 'Disconnected';
-                    if (localVideoBadge) {
-                        localVideoBadge.textContent = 'Off';
-                        localVideoBadge.className = 'video-badge bg-secondary';
-                    }
-                    if (remoteVideoBadge) {
-                        remoteVideoBadge.textContent = 'Offline';
-                        remoteVideoBadge.className = 'video-badge bg-secondary';
-                    }
+                    localVideoStatus.textContent = 'Session ended';
+                    remoteVideoStatus.textContent = 'Disconnected';
+                    localVideoBadge.textContent = 'Off';
+                    localVideoBadge.className = 'video-badge bg-secondary';
+                    remoteVideoBadge.textContent = 'Offline';
+                    remoteVideoBadge.className = 'video-badge bg-secondary';
                     connectionStatus.textContent = 'Disconnected';
-                    if (connectionDot) connectionDot.className = 'status-dot';
+                    connectionDot.className = 'status-dot';
                     roomStatus.textContent = 'Ended';
                     roomStatus.className = 'badge bg-danger';
                     
                     // Reset participants list
-                    if (participantsList) {
-                        while (participantsList.children.length > 1) {
-                            participantsList.removeChild(participantsList.lastChild);
-                        }
+                    while (participantsList.children.length > 1) {
+                        participantsList.removeChild(participantsList.lastChild);
                     }
                     
                     // Update user status
-                    const userStatus = document.querySelector('.user-status');
-                    if (userStatus) userStatus.textContent = 'Offline';
+                    userStatus.textContent = 'Offline';
                     
                     updateUI();
                     
@@ -1190,24 +856,21 @@
                     });
                     
                     // Show audio-only UI
-                    if (localVideo) localVideo.style.display = 'none';
-                    if (localVideoPlaceholder) {
-                        localVideoPlaceholder.style.display = 'flex';
-                        localVideoPlaceholder.innerHTML = '<i class="fas fa-microphone placeholder-icon"></i><p>Audio only mode</p>';
-                    }
+                    localVideo.style.display = 'none';
+                    localVideoPlaceholder.style.display = 'flex';
+                    localVideoPlaceholder.innerHTML = '<i class="fas fa-microphone placeholder-icon"></i><p>Audio only mode</p>';
                     
                     isAudioOn = true;
                     isVideoOn = false;
                     updateUI();
                     
-                    if (localVideoStatus) localVideoStatus.textContent = 'Audio only';
-                    if (localVideoBadge) {
-                        localVideoBadge.textContent = 'Audio';
-                        localVideoBadge.className = 'video-badge bg-primary';
-                    }
+                    localVideoStatus.textContent = 'Audio only';
+                    localVideoBadge.textContent = 'Audio';
+                    localVideoBadge.className = 'video-badge bg-primary';
                 } catch (error) {
                     console.error('Error accessing microphone:', error);
                     showNotification('Could not access microphone', 'error');
+                    throw error;
                 }
             }
 
@@ -1227,21 +890,17 @@
                         audio: true
                     });
                     
-                    if (localVideo) {
-                        localVideo.srcObject = localStream;
-                        localVideo.style.display = 'block';
-                    }
-                    if (localVideoPlaceholder) localVideoPlaceholder.style.display = 'none';
+                    localVideo.srcObject = localStream;
+                    localVideo.style.display = 'block';
+                    localVideoPlaceholder.style.display = 'none';
                     
                     isVideoOn = true;
                     isAudioOn = true;
                     updateUI();
                     
-                    if (localVideoStatus) localVideoStatus.textContent = 'Camera active';
-                    if (localVideoBadge) {
-                        localVideoBadge.textContent = 'Live';
-                        localVideoBadge.className = 'video-badge bg-success';
-                    }
+                    localVideoStatus.textContent = 'Camera active';
+                    localVideoBadge.textContent = 'Live';
+                    localVideoBadge.className = 'video-badge bg-success';
                 } catch (error) {
                     console.error('Error accessing camera:', error);
                     showNotification('Could not access camera', 'error');
@@ -1290,15 +949,13 @@
                                 if (videoTrack) newStream.addTrack(videoTrack);
                                 if (audioTrack) newStream.addTrack(audioTrack);
                                 
-                                if (localVideo) {
-                                    localVideo.srcObject = newStream;
-                                    localVideo.style.display = 'block';
-                                }
+                                localVideo.srcObject = newStream;
+                                localVideo.style.display = 'block';
                                 localStream = newStream;
                             }
                         }
                         
-                        if (localVideoPlaceholder) localVideoPlaceholder.style.display = 'none';
+                        localVideoPlaceholder.style.display = 'none';
                         
                         startSharingBtn.title = 'Stop Sharing';
                         startSharingBtn.className = 'control-btn-large warning';
@@ -1310,11 +967,9 @@
                             toggleScreenShare();
                         };
                         
-                        if (localVideoStatus) localVideoStatus.textContent = 'Screen sharing';
-                        if (localVideoBadge) {
-                            localVideoBadge.textContent = 'Screen';
-                            localVideoBadge.className = 'video-badge bg-primary';
-                        }
+                        localVideoStatus.textContent = 'Screen sharing';
+                        localVideoBadge.textContent = 'Screen';
+                        localVideoBadge.className = 'video-badge bg-primary';
                         
                         showNotification('Screen sharing started', 'success');
                     }
@@ -1393,60 +1048,40 @@
                     }
                     
                     // Update UI
-                    if (remoteVideo) remoteVideo.style.display = 'none';
-                    if (remoteVideoPlaceholder) {
-                        remoteVideoPlaceholder.style.display = 'flex';
-                        remoteVideoPlaceholder.innerHTML = '<i class="fas fa-user-friends placeholder-icon"></i><p>Remote participant will appear here</p>';
-                    }
-                    if (remoteVideoStatus) remoteVideoStatus.textContent = 'Disconnected';
-                    if (remoteVideoBadge) {
-                        remoteVideoBadge.textContent = 'Offline';
-                        remoteVideoBadge.className = 'video-badge bg-secondary';
-                    }
+                    remoteVideo.style.display = 'none';
+                    remoteVideoPlaceholder.style.display = 'flex';
+                    remoteVideoPlaceholder.innerHTML = '<i class="fas fa-user-friends placeholder-icon"></i><p>Remote participant will appear here</p>';
+                    remoteVideoStatus.textContent = 'Disconnected';
+                    remoteVideoBadge.textContent = 'Offline';
+                    remoteVideoBadge.className = 'video-badge bg-secondary';
                     
                     // Reset participants list
-                    if (participantsList) {
-                        while (participantsList.children.length > 1) {
-                            participantsList.removeChild(participantsList.lastChild);
-                        }
+                    while (participantsList.children.length > 1) {
+                        participantsList.removeChild(participantsList.lastChild);
                     }
                     
                     showNotification('Disconnected from participant', 'warning');
                 }
             }
 
-            function showInviteModal() {
-                inviteModal.classList.add('active');
-            }
-
-            function hideInviteModal() {
-                inviteModal.classList.remove('active');
-            }
-
             function copyInviteLink() {
-                if (inviteLink) {
-                    inviteLink.select();
-                    document.execCommand('copy');
-                    showNotification('Invite link copied to clipboard!', 'success');
-                    hideInviteModal();
-                }
+                inviteLink.select();
+                document.execCommand('copy');
+                showNotification('Invite link copied to clipboard!', 'success');
+                inviteModal.hide();
             }
 
             function showNotification(message, type) {
-                if (!notification || !notificationText) return;
-                
                 notificationText.textContent = message;
                 
                 // Set icon and class based on type
                 const icon = notification.querySelector('.notification-icon');
-                if (icon) {
-                    icon.className = type === 'success' 
-                        ? 'fas fa-check-circle notification-icon' 
-                        : 'fas fa-exclamation-circle notification-icon';
-                    notification.className = type === 'success' 
-                        ? 'notification notification-success show' 
-                        : 'notification notification-error show';
-                }
+                icon.className = type === 'success' 
+                    ? 'fas fa-check-circle notification-icon' 
+                    : 'fas fa-exclamation-circle notification-icon';
+                notification.className = type === 'success' 
+                    ? 'notification notification-success show' 
+                    : 'notification notification-error show';
                 
                 // Hide after 3 seconds
                 setTimeout(() => {
@@ -1467,28 +1102,27 @@
                     
                     // Update UI
                     connectionStatus.textContent = 'Ready to connect';
-                    if (connectionDot) connectionDot.className = 'status-dot';
+                    connectionDot.className = 'status-dot';
                     roomStatus.textContent = 'Not Started';
                     roomStatus.className = 'badge bg-secondary';
                     
                     // Update user status
-                    if (userName) userName.textContent = 'Participant';
-                    const userStatus = document.querySelector('.user-status');
-                    if (userStatus) userStatus.textContent = 'Online';
+                    userName.textContent = 'Participant';
+                    userStatus.textContent = 'Online';
+                    isHost = false;
+                    
+                    // Initialize WebSocket connection
+                    initializeSocket();
                 }
             }
 
             function updateUI() {
                 // Update control buttons
-                if (toggleVideoBtn) {
-                    toggleVideoBtn.title = isVideoOn ? 'Turn Off Video' : 'Turn On Video';
-                    toggleVideoBtn.innerHTML = isVideoOn ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
-                }
+                toggleVideoBtn.title = isVideoOn ? 'Turn Off Video' : 'Turn On Video';
+                toggleVideoBtn.innerHTML = isVideoOn ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
                 
-                if (toggleAudioBtn) {
-                    toggleAudioBtn.title = isAudioOn ? 'Turn Off Audio' : 'Turn On Audio';
-                    toggleAudioBtn.innerHTML = isAudioOn ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-                }
+                toggleAudioBtn.title = isAudioOn ? 'Turn Off Audio' : 'Turn On Audio';
+                toggleAudioBtn.innerHTML = isAudioOn ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
             }
 
             function generateRoomId() {
@@ -1522,40 +1156,27 @@
                 const stream = canvas.captureStream(15);
                 
                 // Display the remote stream
-                if (remoteVideo) {
-                    remoteVideo.srcObject = stream;
-                    remoteVideo.style.display = 'block';
-                }
-                if (remoteVideoPlaceholder) remoteVideoPlaceholder.style.display = 'none';
+                remoteVideo.srcObject = stream;
+                remoteVideo.style.display = 'block';
+                remoteVideoPlaceholder.style.display = 'none';
                 
                 // Add a participant to the list
-                if (participantsList) {
-                    const newParticipant = document.createElement('li');
-                    newParticipant.className = 'participant-item';
-                    newParticipant.innerHTML = `
-                        <div class="participant-avatar">R</div>
-                        <div class="participant-info">
-                            <div class="participant-name">Remote User</div>
-                            <div class="participant-status">Participant</div>
-                        </div>
-                        <div class="status-indicator"></div>
-                    `;
-                    participantsList.appendChild(newParticipant);
-                }
+                const newParticipant = document.createElement('li');
+                newParticipant.className = 'd-flex align-items-center mb-2 p-2 rounded';
+                newParticipant.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                newParticipant.innerHTML = `
+                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; margin-right: 10px;">R</div>
+                    <div>
+                        <div class="fw-medium">Remote User</div>
+                        <small class="text-white-50">Participant</small>
+                    </div>
+                `;
+                participantsList.appendChild(newParticipant);
                 
                 // Update status
-                if (remoteVideoStatus) remoteVideoStatus.textContent = 'Connected';
-                if (remoteVideoBadge) {
-                    remoteVideoBadge.textContent = 'Live';
-                    remoteVideoBadge.className = 'video-badge bg-success';
-                }
-                if (remoteStatus) {
-                    remoteStatus.textContent = '1 participant';
-                    remoteStatus.className = 'badge bg-success';
-                }
-                
-                // Enable remote fullscreen button
-                if (remoteFullscreenBtn) remoteFullscreenBtn.disabled = false;
+                remoteVideoStatus.textContent = 'Connected';
+                remoteVideoBadge.textContent = 'Live';
+                remoteVideoBadge.className = 'video-badge bg-success';
                 
                 showNotification('Participant joined the session', 'success');
             }
